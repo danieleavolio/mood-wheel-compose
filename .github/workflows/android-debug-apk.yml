@@ -1,0 +1,59 @@
+name: Build Android Debug APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.10.2
+
+      - name: Find Gradle project
+        shell: bash
+        run: |
+          echo "Repository files:"
+          find . -maxdepth 3 -type f | sort
+
+          GRADLE_ROOT="$(find . -maxdepth 3 \( -name settings.gradle.kts -o -name settings.gradle \) -print -quit)"
+          if [ -z "$GRADLE_ROOT" ]; then
+            echo "No Gradle settings file found."
+            echo "Make sure build.gradle.kts, settings.gradle.kts, app/, and gradle.properties are committed to this repository."
+            exit 1
+          fi
+
+          GRADLE_ROOT="$(dirname "$GRADLE_ROOT")"
+          echo "GRADLE_ROOT=$GRADLE_ROOT" >> "$GITHUB_ENV"
+          echo "Gradle project found at: $GRADLE_ROOT"
+
+      - name: Build debug APK
+        shell: bash
+        run: |
+          cd "$GRADLE_ROOT"
+          gradle :app:assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mood-wheel-debug-apk
+          path: "**/app/build/outputs/apk/debug/app-debug.apk"
