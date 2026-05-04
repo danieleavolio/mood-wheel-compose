@@ -102,7 +102,9 @@ private fun CalendarGrid(
 ) {
     val daysInMonth = month.lengthOfMonth()
     val firstWeekday = month.dayOfWeek.value
-    val cells = (1 until firstWeekday).map<Int?> { null } + (1..daysInMonth).map { it }
+    val leadingEmptyDays = List(firstWeekday - 1) { null as Int? }
+    val monthDays = (1..daysInMonth).map { it as Int? }
+    val cells = leadingEmptyDays + monthDays
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         cells.chunked(7).forEach { week ->
