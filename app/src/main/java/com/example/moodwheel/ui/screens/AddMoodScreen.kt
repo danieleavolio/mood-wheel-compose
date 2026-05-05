@@ -6,7 +6,6 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,17 +18,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -44,6 +46,7 @@ import com.example.moodwheel.ui.components.EmotionChips
 import com.example.moodwheel.ui.components.EmotionWheel
 import com.example.moodwheel.ui.components.GradientButton
 import com.example.moodwheel.ui.components.MoodListSelector
+import com.example.moodwheel.ui.components.SecondaryButton
 import com.example.moodwheel.ui.components.StepProgress
 import com.example.moodwheel.ui.theme.color
 import com.example.moodwheel.ui.theme.softColor
@@ -102,12 +105,11 @@ fun AddMoodScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (state.step > 1) {
-                    OutlinedButton(
+                    SecondaryButton(
+                        text = "Indietro",
                         onClick = viewModel::previousStep,
                         modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Indietro")
-                    }
+                    )
                 }
                 GradientButton(
                     text = if (state.step == 4) "Salva" else "Avanti",
@@ -217,7 +219,7 @@ private fun DateTimeStep(
         Text("Quando e successo?", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text("Puoi lasciare l'ora attuale o cambiarla.", textAlign = TextAlign.Center)
 
-        OutlinedButton(
+        Button(
             onClick = {
                 DatePickerDialog(
                     context,
@@ -229,7 +231,15 @@ private fun DateTimeStep(
                     state.date.dayOfMonth
                 ).show()
             },
-            modifier = Modifier.fillMaxWidth(0.82f)
+            modifier = Modifier
+                .fillMaxWidth(0.82f)
+                .height(54.dp),
+            shape = RoundedCornerShape(18.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFF1EDFF),
+                contentColor = MaterialTheme.colorScheme.primary
+            ),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
         ) {
             Text(state.date.formatDate())
         }
@@ -268,10 +278,15 @@ private fun TimeTile(
     value: String,
     onClick: () -> Unit
 ) {
-    OutlinedButton(
+    Button(
         onClick = onClick,
         shape = RoundedCornerShape(18.dp),
-        modifier = Modifier.height(88.dp)
+        modifier = Modifier.height(88.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFFFFFCF8),
+            contentColor = Color(0xFF221B38)
+        ),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp, pressedElevation = 2.dp)
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(value, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold)
@@ -312,6 +327,13 @@ private fun NoteStep(
                         .height(220.dp),
                     placeholder = { Text("Una frase, un pensiero, o anche niente.") },
                     minLines = 6,
+                    shape = RoundedCornerShape(18.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedContainerColor = Color(0xFFF8F4FF),
+                        unfocusedContainerColor = Color(0xFFF8F4FF)
+                    ),
                     supportingText = {
                         Text("${state.note.length}/300")
                     }

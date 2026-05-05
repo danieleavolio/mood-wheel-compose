@@ -41,9 +41,9 @@ fun CalmBackground(
         modifier = modifier.background(
             Brush.verticalGradient(
                 colors = listOf(
-                    Color(0xFFFFFBFF),
-                    Color(0xFFF6F4FF),
-                    Color(0xFFFFFBFF)
+                    Color(0xFFF2EEFF),
+                    Color(0xFFFFF8F0),
+                    Color(0xFFF7FBFF)
                 )
             )
         ),
