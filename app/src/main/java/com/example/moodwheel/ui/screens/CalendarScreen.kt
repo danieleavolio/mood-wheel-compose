@@ -29,6 +29,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.moodwheel.domain.model.EmotionCatalog
 import com.example.moodwheel.domain.model.MacroEmotion
+import com.example.moodwheel.ui.components.CalmBackground
+import com.example.moodwheel.ui.components.CalmCard
 import com.example.moodwheel.ui.theme.color
 import java.time.LocalDate
 
@@ -42,54 +44,60 @@ fun CalendarScreen(
 ) {
     val entriesByDay = state.monthEntries.groupBy { it.timestamp.toLocalDate() }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(18.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+    CalmBackground(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            IconButton(onClick = onPreviousMonth) { Text("<") }
-            Text(
-                text = state.visibleMonth.formatMonth(),
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-            IconButton(onClick = onNextMonth) { Text(">") }
-        }
-
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            listOf("L", "M", "M", "G", "V", "S", "D").forEach {
-                Text(it, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-            }
-        }
-
-        CalendarGrid(
-            month = state.visibleMonth,
-            entriesByDay = entriesByDay
-        )
-
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            EmotionCatalog.emotions.forEach { emotion ->
-                LegendItem(emotion)
-            }
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Box(
-                    modifier = Modifier
-                        .size(12.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onPreviousMonth) { Text("<") }
+                Text(
+                    text = state.visibleMonth.formatMonth(),
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
                 )
-                Text("Neutro / Misto", style = MaterialTheme.typography.labelMedium)
+                IconButton(onClick = onNextMonth) { Text(">") }
+            }
+
+            CalmCard(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        listOf("L", "M", "M", "G", "V", "S", "D").forEach {
+                            Text(it, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+                        }
+                    }
+
+                    CalendarGrid(
+                        month = state.visibleMonth,
+                        entriesByDay = entriesByDay
+                    )
+                }
+            }
+
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                EmotionCatalog.emotions.forEach { emotion ->
+                    LegendItem(emotion)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
+                    )
+                    Text("Neutro / Misto", style = MaterialTheme.typography.labelMedium)
+                }
             }
         }
     }

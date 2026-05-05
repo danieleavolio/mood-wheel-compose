@@ -2,6 +2,10 @@ package com.example.moodwheel.ui.screens
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,8 +18,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -30,8 +34,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.moodwheel.domain.model.EmotionCatalog
+import com.example.moodwheel.domain.model.MoodLevel
+import com.example.moodwheel.ui.components.CalmBackground
+import com.example.moodwheel.ui.components.CalmCard
+import com.example.moodwheel.ui.components.EmotionArtwork
 import com.example.moodwheel.ui.components.EmotionChips
 import com.example.moodwheel.ui.components.EmotionWheel
+import com.example.moodwheel.ui.components.GradientButton
 import com.example.moodwheel.ui.components.MoodSelector
 import com.example.moodwheel.ui.theme.color
 import com.example.moodwheel.ui.theme.softColor
@@ -47,62 +56,71 @@ fun AddMoodScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val scroll = rememberScrollState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(scroll)
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+    CalmBackground(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scroll)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            OutlinedButton(onClick = onClose) { Text("Chiudi") }
-            Text(
-                text = "Aggiungi umore",
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.SemiBold
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedButton(onClick = onClose) { Text("Chiudi") }
+                Text(
+                    text = "Aggiungi umore",
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text("${state.step} di 4", style = MaterialTheme.typography.labelLarge)
+            }
+
+            LinearProgressIndicator(
+                progress = { state.step / 4f },
+                modifier = Modifier.fillMaxWidth()
             )
-            Text("${state.step} di 4", style = MaterialTheme.typography.labelLarge)
-        }
 
-        when (state.step) {
-            1 -> MoodStep(state = state, onSelect = viewModel::selectMood)
-            2 -> EmotionStep(state = state, viewModel = viewModel)
-            3 -> DateTimeStep(state = state, viewModel = viewModel)
-            4 -> NoteStep(state = state, onNote = viewModel::updateNote)
-        }
-
-        Spacer(Modifier.height(8.dp))
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            if (state.step > 1) {
-                OutlinedButton(
-                    onClick = viewModel::previousStep,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Indietro")
+            AnimatedContent(
+                targetState = state.step,
+                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                label = "addMoodStep"
+            ) { step ->
+                when (step) {
+                    1 -> MoodStep(state = state, onSelect = viewModel::selectMood)
+                    2 -> EmotionStep(state = state, viewModel = viewModel)
+                    3 -> DateTimeStep(state = state, viewModel = viewModel)
+                    4 -> NoteStep(state = state, onNote = viewModel::updateNote)
                 }
             }
-            Button(
-                onClick = {
-                    if (state.step == 4) {
-                        viewModel.save(onSaved)
-                    } else {
-                        viewModel.nextStep()
-                    }
-                },
-                enabled = state.canGoNext && !state.isSaving,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(54.dp)
+
+            Spacer(Modifier.height(8.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(if (state.step == 4) "Salva" else "Avanti")
+                if (state.step > 1) {
+                    OutlinedButton(
+                        onClick = viewModel::previousStep,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Indietro")
+                    }
+                }
+                GradientButton(
+                    text = if (state.step == 4) "Salva" else "Avanti",
+                    onClick = {
+                        if (state.step == 4) {
+                            viewModel.save(onSaved)
+                        } else {
+                            viewModel.nextStep()
+                        }
+                    },
+                    enabled = state.canGoNext && !state.isSaving,
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
     }
@@ -111,7 +129,7 @@ fun AddMoodScreen(
 @Composable
 private fun MoodStep(
     state: AddMoodUiState,
-    onSelect: (com.example.moodwheel.domain.model.MoodLevel) -> Unit
+    onSelect: (MoodLevel) -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -123,8 +141,12 @@ private fun MoodStep(
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center
         )
-        Spacer(Modifier.height(48.dp))
-        MoodSelector(selected = state.moodLevel, onSelect = onSelect)
+        Spacer(Modifier.height(28.dp))
+        CalmCard(modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(18.dp)) {
+                MoodSelector(selected = state.moodLevel, onSelect = onSelect)
+            }
+        }
     }
 }
 
@@ -138,7 +160,7 @@ private fun EmotionStep(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text("Quale emozione prevale?", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        Text("Seleziona una categoria dalla ruota.", style = MaterialTheme.typography.bodyMedium)
+        Text("Tocca una categoria grande. Le parole arrivano dopo.", style = MaterialTheme.typography.bodyMedium)
         EmotionWheel(
             selected = state.selectedMacro,
             onSelect = viewModel::selectMacro
@@ -146,11 +168,16 @@ private fun EmotionStep(
 
         val selected = state.selectedMacro
         if (selected == null) {
-            Text("Tocca una categoria per vedere le parole più vicine a quello che senti.")
+            CalmCard(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Non serve essere precisi subito. Scegli quello che assomiglia di piu al momento.",
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
         } else {
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(18.dp)
             ) {
                 Column(
                     modifier = Modifier
@@ -159,8 +186,16 @@ private fun EmotionStep(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(selected.label, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Text("Scegli le emozioni che senti. Puoi selezionarne più di una.")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        EmotionArtwork(emotion = selected, size = 58.dp)
+                        Column {
+                            Text(selected.label, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text("Puoi selezionarne piu di una.")
+                        }
+                    }
                     EmotionChips(
                         emotion = selected,
                         selected = state.selectedMicro,
@@ -183,41 +218,45 @@ private fun DateTimeStep(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
-        Text("Quando è successo?", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text("Quando e successo?", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text("Puoi lasciare l'ora attuale o cambiarla.", textAlign = TextAlign.Center)
 
-        OutlinedButton(
-            onClick = {
-                DatePickerDialog(
-                    context,
-                    { _, year, month, day ->
-                        viewModel.updateDate(LocalDate.of(year, month + 1, day))
+        CalmCard(modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedButton(
+                    onClick = {
+                        DatePickerDialog(
+                            context,
+                            { _, year, month, day ->
+                                viewModel.updateDate(LocalDate.of(year, month + 1, day))
+                            },
+                            state.date.year,
+                            state.date.monthValue - 1,
+                            state.date.dayOfMonth
+                        ).show()
                     },
-                    state.date.year,
-                    state.date.monthValue - 1,
-                    state.date.dayOfMonth
-                ).show()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(state.date.formatDate())
-        }
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(state.date.formatDate())
+                }
 
-        OutlinedButton(
-            onClick = {
-                TimePickerDialog(
-                    context,
-                    { _, hour, minute ->
-                        viewModel.updateTime(LocalTime.of(hour, minute))
+                OutlinedButton(
+                    onClick = {
+                        TimePickerDialog(
+                            context,
+                            { _, hour, minute ->
+                                viewModel.updateTime(LocalTime.of(hour, minute))
+                            },
+                            state.time.hour,
+                            state.time.minute,
+                            true
+                        ).show()
                     },
-                    state.time.hour,
-                    state.time.minute,
-                    true
-                ).show()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("%02d:%02d".format(state.time.hour, state.time.minute))
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("%02d:%02d".format(state.time.hour, state.time.minute))
+                }
+            }
         }
     }
 }
@@ -232,23 +271,33 @@ private fun NoteStep(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text("Vuoi aggiungere una nota?", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        Text("Racconta cosa è successo, solo se ti va.")
-        OutlinedTextField(
-            value = state.note,
-            onValueChange = onNote,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp),
-            placeholder = { Text("Una frase, un pensiero, o anche niente.") },
-            minLines = 6,
-            supportingText = {
-                Text("${state.note.length}/300")
+        Text("Racconta cosa e successo, solo se ti va.")
+        CalmCard(modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    EmotionArtwork(emotion = macro, size = 54.dp)
+                    Text(
+                        text = "Categoria scelta: ${macro.label}",
+                        color = macro.color(),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                OutlinedTextField(
+                    value = state.note,
+                    onValueChange = onNote,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp),
+                    placeholder = { Text("Una frase, un pensiero, o anche niente.") },
+                    minLines = 6,
+                    supportingText = {
+                        Text("${state.note.length}/300")
+                    }
+                )
             }
-        )
-        Text(
-            text = "Categoria scelta: ${macro.label}",
-            color = macro.color(),
-            fontWeight = FontWeight.SemiBold
-        )
+        }
     }
 }

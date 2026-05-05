@@ -23,6 +23,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.moodwheel.domain.model.MoodEntry
+import com.example.moodwheel.ui.components.CalmBackground
+import com.example.moodwheel.ui.components.CalmCard
+import com.example.moodwheel.ui.components.EmotionArtwork
 import com.example.moodwheel.ui.theme.color
 import java.time.LocalDate
 
@@ -48,62 +51,55 @@ fun StatsScreen(
         .take(3)
         .joinToString(", ") { it.key }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-        Text("Statistiche", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-            StatCard(title = "Momenti", value = weekEntries.size.toString(), modifier = Modifier.weight(1f))
-            StatCard(
-                title = "Giorni",
-                value = weekEntries.map { it.timestamp.toLocalDate() }.distinct().size.toString(),
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    CalmBackground(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Emozione prevalente", fontWeight = FontWeight.SemiBold)
-                if (prevalent == null) {
-                    Text("Non ci sono ancora abbastanza momenti questa settimana.")
-                } else {
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(prevalent.label, color = prevalent.color(), fontWeight = FontWeight.Bold)
-                        Text("${weekEntries.count { it.primaryEmotion.id == prevalent.id }} momenti")
+            Text("Statistiche", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                StatCard(title = "Momenti", value = weekEntries.size.toString(), modifier = Modifier.weight(1f))
+                StatCard(
+                    title = "Giorni",
+                    value = weekEntries.map { it.timestamp.toLocalDate() }.distinct().size.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            CalmCard(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Emozione prevalente", fontWeight = FontWeight.SemiBold)
+                    if (prevalent == null) {
+                        Text("Non ci sono ancora abbastanza momenti questa settimana.")
+                    } else {
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            EmotionArtwork(emotion = prevalent, size = 58.dp)
+                            Column {
+                                Text(prevalent.label, color = prevalent.color(), fontWeight = FontWeight.Bold)
+                                Text("${weekEntries.count { it.primaryEmotion.id == prevalent.id }} momenti")
+                            }
+                        }
                     }
                 }
             }
-        }
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Andamento leggero", fontWeight = FontWeight.SemiBold)
-                MoodTrend(entries = weekEntries)
-                Text("Uno sguardo semplice, senza giudizi o punteggi.")
+            CalmCard(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("Andamento leggero", fontWeight = FontWeight.SemiBold)
+                    MoodTrend(entries = weekEntries)
+                    Text("Uno sguardo semplice, senza giudizi o punteggi.")
+                }
             }
-        }
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Parole ricorrenti", fontWeight = FontWeight.SemiBold)
-                Text(if (mostUsedWords.isBlank()) "Ancora nessuna parola specifica." else mostUsedWords)
+            CalmCard(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Parole ricorrenti", fontWeight = FontWeight.SemiBold)
+                    Text(if (mostUsedWords.isBlank()) "Ancora nessuna parola specifica." else mostUsedWords)
+                }
             }
         }
     }
@@ -115,10 +111,8 @@ private fun StatCard(
     value: String,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    CalmCard(
         modifier = modifier,
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(Modifier.padding(16.dp)) {
             Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
