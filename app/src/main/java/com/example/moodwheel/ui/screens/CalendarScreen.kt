@@ -2,6 +2,7 @@ package com.example.moodwheel.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,8 +20,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.example.moodwheel.R
 import com.example.moodwheel.domain.model.EmotionCatalog
 import com.example.moodwheel.domain.model.MacroEmotion
+import com.example.moodwheel.domain.model.MoodEntry
 import com.example.moodwheel.ui.components.AppIllustration
 import com.example.moodwheel.ui.components.CalmBackground
 import com.example.moodwheel.ui.components.CalmCard
@@ -42,9 +49,12 @@ fun CalendarScreen(
     state: CalendarUiState,
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
+    onEntryClick: (MoodEntry) -> Unit,
+    onAddMoodForDate: (LocalDate) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val entriesByDay = state.monthEntries.groupBy { it.timestamp.toLocalDate() }
+    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
 
     CalmBackground(modifier = modifier.fillMaxSize()) {
         Column(
@@ -80,7 +90,8 @@ fun CalendarScreen(
 
                     CalendarGrid(
                         month = state.visibleMonth,
-                        entriesByDay = entriesByDay
+                        entriesByDay = entriesByDay,
+                        onDayClick = { selectedDate = it }
                     )
                 }
             }
@@ -104,12 +115,47 @@ fun CalendarScreen(
             }
         }
     }
+
+    selectedDate?.let { date ->
+        val dayEntries = entriesByDay[date].orEmpty()
+        ModalBottomSheet(onDismissRequest = { selectedDate = null }) {
+            Column(
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(dayTitle(date), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                if (dayEntries.isEmpty()) {
+                    Text("Nessun momento registrato in questo giorno.")
+                } else {
+                    dayEntries.forEach { entry ->
+                        DiaryEntryRow(
+                            entry = entry,
+                            onClick = {
+                                selectedDate = null
+                                onEntryClick(entry)
+                            }
+                        )
+                    }
+                }
+                androidx.compose.material3.Button(
+                    onClick = {
+                        selectedDate = null
+                        onAddMoodForDate(date)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Aggiungi qui")
+                }
+            }
+        }
+    }
 }
 
 @Composable
 private fun CalendarGrid(
     month: LocalDate,
-    entriesByDay: Map<LocalDate, List<com.example.moodwheel.domain.model.MoodEntry>>
+    entriesByDay: Map<LocalDate, List<MoodEntry>>,
+    onDayClick: (LocalDate) -> Unit
 ) {
     val daysInMonth = month.lengthOfMonth()
     val firstWeekday = month.dayOfWeek.value
@@ -137,6 +183,7 @@ private fun CalendarGrid(
                                 modifier = Modifier
                                     .size(34.dp)
                                     .clip(CircleShape)
+                                    .clickable { date?.let(onDayClick) }
                                     .background(emotion?.color() ?: MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                                     .border(
                                         width = if (date == LocalDate.now()) 2.dp else 0.dp,

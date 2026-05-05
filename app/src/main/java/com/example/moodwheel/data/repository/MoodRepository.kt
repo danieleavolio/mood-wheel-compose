@@ -36,6 +36,14 @@ class MoodRepository(
     suspend fun add(entry: MoodEntry): Long =
         dao.insert(entry.toEntity())
 
+    suspend fun update(entry: MoodEntry) {
+        dao.update(entry.toEntity())
+    }
+
+    suspend fun delete(id: Long) {
+        dao.delete(id)
+    }
+
     suspend fun seedIfEmpty(entries: List<MoodEntry>) {
         if (dao.count() == 0) {
             entries.forEach { dao.insert(it.toEntity()) }

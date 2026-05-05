@@ -19,3 +19,10 @@ fun LocalDate.formatMonth(): String = format(monthFormatter).replaceFirstChar { 
 
 fun Long.toLocalDate(): LocalDate =
     Instant.ofEpochMilli(this).atZone(ZoneId.systemDefault()).toLocalDate()
+
+fun dayTitle(date: LocalDate): String =
+    when (date) {
+        LocalDate.now() -> "Oggi"
+        LocalDate.now().minusDays(1) -> "Ieri"
+        else -> date.formatDate()
+    }

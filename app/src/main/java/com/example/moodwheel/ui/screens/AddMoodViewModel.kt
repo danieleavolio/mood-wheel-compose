@@ -38,9 +38,10 @@ data class AddMoodUiState(
 
 class AddMoodViewModel(
     private val repository: MoodRepository,
+    initialDate: LocalDate? = null,
     private val zoneId: ZoneId = ZoneId.systemDefault()
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(AddMoodUiState())
+    private val _uiState = MutableStateFlow(AddMoodUiState(date = initialDate ?: LocalDate.now()))
     val uiState: StateFlow<AddMoodUiState> = _uiState.asStateFlow()
 
     fun selectMood(level: MoodLevel) {
@@ -114,9 +115,10 @@ class AddMoodViewModel(
 }
 
 class AddMoodViewModelFactory(
-    private val repository: MoodRepository
+    private val repository: MoodRepository,
+    private val initialDate: LocalDate? = null
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T =
-        AddMoodViewModel(repository) as T
+        AddMoodViewModel(repository, initialDate = initialDate) as T
 }

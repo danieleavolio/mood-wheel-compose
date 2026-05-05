@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 data class CalendarUiState(
@@ -51,6 +52,18 @@ class CalendarStatsViewModel(
 
     fun nextMonth() {
         visibleMonth.update { it.plusMonths(1) }
+    }
+
+    fun updateEntry(entry: MoodEntry) {
+        viewModelScope.launch {
+            repository.update(entry)
+        }
+    }
+
+    fun deleteEntry(id: Long) {
+        viewModelScope.launch {
+            repository.delete(id)
+        }
     }
 }
 

@@ -3,19 +3,20 @@ package com.example.moodwheel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,6 +28,8 @@ import com.example.moodwheel.ui.screens.AddMoodViewModelFactory
 import com.example.moodwheel.ui.screens.CalendarScreen
 import com.example.moodwheel.ui.screens.CalendarStatsViewModel
 import com.example.moodwheel.ui.screens.CalendarStatsViewModelFactory
+import com.example.moodwheel.ui.screens.DiaryScreen
+import com.example.moodwheel.ui.screens.EntryDetailScreen
 import com.example.moodwheel.ui.screens.ExportScreen
 import com.example.moodwheel.ui.screens.ExportViewModelFactory
 import com.example.moodwheel.ui.screens.HomeScreen
@@ -35,6 +38,8 @@ import com.example.moodwheel.ui.screens.HomeViewModelFactory
 import com.example.moodwheel.ui.screens.OnboardingScreen
 import com.example.moodwheel.ui.screens.StatsScreen
 import com.example.moodwheel.ui.theme.MoodWheelTheme
+import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,101 +67,158 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class Screen {
+private enum class AppMode {
+    Main,
+    Add,
+    Detail
+}
+
+private enum class Tab {
     Home,
     Calendar,
     Stats,
-    Export,
-    Add
+    Diary,
+    Export
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MoodApp(repository: MoodRepository) {
-    var screen by remember { mutableStateOf(Screen.Home) }
+    var mode by remember { mutableStateOf(AppMode.Main) }
+    var addInitialDate by remember { mutableStateOf<LocalDate?>(null) }
+    var addSession by remember { mutableIntStateOf(0) }
+    var selectedEntryId by remember { mutableStateOf<Long?>(null) }
 
-    if (screen == Screen.Add) {
-        AddMoodScreen(
-            viewModel = viewModel(factory = AddMoodViewModelFactory(repository)),
-            onClose = { screen = Screen.Home },
-            onSaved = { screen = Screen.Home }
-        )
-        return
+    val tabs = listOf(Tab.Home, Tab.Calendar, Tab.Stats, Tab.Diary, Tab.Export)
+    val pagerState = rememberPagerState(pageCount = { tabs.size })
+    val scope = rememberCoroutineScope()
+
+    val calendarVm: CalendarStatsViewModel = viewModel(factory = CalendarStatsViewModelFactory(repository))
+    val entries by calendarVm.allEntries.collectAsStateWithLifecycle()
+
+    fun openAdd(date: LocalDate? = null) {
+        addInitialDate = date
+        addSession += 1
+        mode = AppMode.Add
+    }
+
+    when (mode) {
+        AppMode.Add -> {
+            AddMoodScreen(
+                viewModel = viewModel(
+                    key = "add-$addSession",
+                    factory = AddMoodViewModelFactory(repository, initialDate = addInitialDate)
+                ),
+                onClose = { mode = AppMode.Main },
+                onSaved = { mode = AppMode.Main }
+            )
+            return
+        }
+
+        AppMode.Detail -> {
+            val entry = entries.firstOrNull { it.id == selectedEntryId }
+            if (entry == null) {
+                mode = AppMode.Main
+            } else {
+                EntryDetailScreen(
+                    entry = entry,
+                    onBack = { mode = AppMode.Main },
+                    onSave = calendarVm::updateEntry,
+                    onDelete = calendarVm::deleteEntry
+                )
+                return
+            }
+        }
+
+        AppMode.Main -> Unit
     }
 
     Scaffold(
         bottomBar = {
             NavigationBar {
-                listOf(Screen.Home, Screen.Calendar, Screen.Stats, Screen.Export).forEach { item ->
+                tabs.forEachIndexed { index, item ->
+                    val selected = pagerState.currentPage == index
                     NavigationBarItem(
-                        selected = screen == item,
-                        onClick = { screen = item },
-                        icon = { NavGlyph(tabIcon(item), selected = screen == item) },
+                        selected = selected,
+                        onClick = {
+                            scope.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
+                        },
+                        icon = { NavGlyph(tabIcon(item), selected = selected) },
                         label = { Text(tabLabel(item)) }
                     )
                 }
             }
         }
     ) { padding ->
-        AnimatedContent(
-            targetState = screen,
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
-            label = "screenTransition"
-        ) { target ->
-            when (target) {
-                Screen.Home -> {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.padding(padding)
+        ) { page ->
+            when (tabs[page]) {
+                Tab.Home -> {
                     val homeViewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(repository))
                     val state by homeViewModel.uiState.collectAsStateWithLifecycle()
                     HomeScreen(
                         state = state,
-                        onAddMood = { screen = Screen.Add },
-                        modifier = Modifier.padding(padding)
+                        onAddMood = { openAdd() }
                     )
                 }
 
-                Screen.Calendar -> {
-                    val vm: CalendarStatsViewModel = viewModel(factory = CalendarStatsViewModelFactory(repository))
-                    val state by vm.calendarUiState.collectAsStateWithLifecycle()
+                Tab.Calendar -> {
+                    val state by calendarVm.calendarUiState.collectAsStateWithLifecycle()
                     CalendarScreen(
                         state = state,
-                        onPreviousMonth = vm::previousMonth,
-                        onNextMonth = vm::nextMonth,
-                        modifier = Modifier.padding(padding)
+                        onPreviousMonth = calendarVm::previousMonth,
+                        onNextMonth = calendarVm::nextMonth,
+                        onEntryClick = { entry ->
+                            selectedEntryId = entry.id
+                            mode = AppMode.Detail
+                        },
+                        onAddMoodForDate = { date -> openAdd(date) }
                     )
                 }
 
-                Screen.Stats -> {
-                    val vm: CalendarStatsViewModel = viewModel(factory = CalendarStatsViewModelFactory(repository))
-                    val entries by vm.allEntries.collectAsStateWithLifecycle()
-                    StatsScreen(entries = entries, modifier = Modifier.padding(padding))
+                Tab.Stats -> {
+                    StatsScreen(entries = entries)
                 }
 
-                Screen.Export -> {
+                Tab.Diary -> {
+                    DiaryScreen(
+                        entries = entries,
+                        onEntryClick = { entry ->
+                            selectedEntryId = entry.id
+                            mode = AppMode.Detail
+                        },
+                        onAddMood = { openAdd() }
+                    )
+                }
+
+                Tab.Export -> {
                     ExportScreen(
-                        viewModel = viewModel(factory = ExportViewModelFactory(repository)),
-                        modifier = Modifier.padding(padding)
+                        viewModel = viewModel(factory = ExportViewModelFactory(repository))
                     )
                 }
-
-                Screen.Add -> Unit
             }
         }
     }
 }
 
-private fun tabLabel(screen: Screen): String =
-    when (screen) {
-        Screen.Home -> "Home"
-        Screen.Calendar -> "Calendario"
-        Screen.Stats -> "Statistiche"
-        Screen.Export -> "Esporta"
-        Screen.Add -> ""
+private fun tabLabel(tab: Tab): String =
+    when (tab) {
+        Tab.Home -> "Home"
+        Tab.Calendar -> "Calendario"
+        Tab.Stats -> "Statistiche"
+        Tab.Diary -> "Diario"
+        Tab.Export -> "Esporta"
     }
 
-private fun tabIcon(screen: Screen): String =
-    when (screen) {
-        Screen.Home -> "Home"
-        Screen.Calendar -> "Cal"
-        Screen.Stats -> "Trend"
-        Screen.Export -> "JSON"
-        Screen.Add -> ""
+private fun tabIcon(tab: Tab): String =
+    when (tab) {
+        Tab.Home -> "Home"
+        Tab.Calendar -> "Cal"
+        Tab.Stats -> "Trend"
+        Tab.Diary -> "Diario"
+        Tab.Export -> "JSON"
     }
