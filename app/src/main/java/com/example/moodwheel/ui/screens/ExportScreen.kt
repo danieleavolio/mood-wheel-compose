@@ -1,13 +1,16 @@
 package com.example.moodwheel.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +20,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -61,20 +67,31 @@ fun ExportScreen(
         ) {
             Text("Esporta dati", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
 
-            CalmCard(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(30.dp))
+                    .background(
+                        Brush.linearGradient(
+                            listOf(Color(0xFFECE7FF), Color(0xFFFFF3DF), Color(0xFFF7FBFF))
+                        )
+                    )
+            ) {
                 Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(18.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     AppIllustration(resId = R.drawable.export_json)
-                    Text("Esporta i tuoi momenti", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text("Esporta i tuoi momenti", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Text(
                         "Scarica tutti i tuoi dati in un file JSON per conservarli o portarli altrove.",
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text("${entries.size} momenti pronti", fontWeight = FontWeight.SemiBold)
+                    PrivacyBadge("${entries.size} momenti pronti")
                 }
             }
 
@@ -98,5 +115,17 @@ fun ExportScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun PrivacyBadge(text: String) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(100.dp))
+            .background(Color.White.copy(alpha = 0.76f))
+            .padding(horizontal = 16.dp, vertical = 9.dp)
+    ) {
+        Text(text, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
     }
 }

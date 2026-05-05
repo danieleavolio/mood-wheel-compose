@@ -1,14 +1,21 @@
 package com.example.moodwheel
 
 import android.os.Bundle
+import androidx.activity.compose.BackHandler
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +26,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moodwheel.data.repository.MoodRepository
@@ -96,6 +105,10 @@ private fun MoodApp(repository: MoodRepository) {
     val calendarVm: CalendarStatsViewModel = viewModel(factory = CalendarStatsViewModelFactory(repository))
     val entries by calendarVm.allEntries.collectAsStateWithLifecycle()
 
+    BackHandler(enabled = mode == AppMode.Main && pagerState.currentPage != 0) {
+        scope.launch { pagerState.animateScrollToPage(0) }
+    }
+
     fun openAdd(date: LocalDate? = null) {
         addInitialDate = date
         addSession += 1
@@ -120,6 +133,7 @@ private fun MoodApp(repository: MoodRepository) {
             if (entry == null) {
                 mode = AppMode.Main
             } else {
+                BackHandler { mode = AppMode.Main }
                 EntryDetailScreen(
                     entry = entry,
                     onBack = { mode = AppMode.Main },
@@ -135,9 +149,20 @@ private fun MoodApp(repository: MoodRepository) {
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                containerColor = Color.Transparent,
+                tonalElevation = 0.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Transparent)
+                    .padding(horizontal = 14.dp, vertical = 10.dp)
+            ) {
                 tabs.forEachIndexed { index, item ->
                     val selected = pagerState.currentPage == index
+                    val indicator by animateColorAsState(
+                        targetValue = if (selected) Color(0xFFECE7FF) else Color.Transparent,
+                        label = "navIndicator"
+                    )
                     NavigationBarItem(
                         selected = selected,
                         onClick = {
@@ -146,7 +171,14 @@ private fun MoodApp(repository: MoodRepository) {
                             }
                         },
                         icon = { NavGlyph(tabIcon(item), selected = selected) },
-                        label = { Text(tabLabel(item)) }
+                        label = { Text(tabLabel(item)) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color(0xFF5D4AE3),
+                            selectedTextColor = Color(0xFF5D4AE3),
+                            unselectedIconColor = Color(0xFF827A95),
+                            unselectedTextColor = Color(0xFF827A95),
+                            indicatorColor = indicator
+                        )
                     )
                 }
             }
@@ -217,9 +249,9 @@ private fun tabLabel(tab: Tab): String =
 
 private fun tabIcon(tab: Tab): String =
     when (tab) {
-        Tab.Home -> "Home"
-        Tab.Calendar -> "Cal"
-        Tab.Stats -> "Trend"
-        Tab.Diary -> "Diario"
-        Tab.Export -> "JSON"
+        Tab.Home -> "home"
+        Tab.Calendar -> "calendar"
+        Tab.Stats -> "stats"
+        Tab.Diary -> "diary"
+        Tab.Export -> "export"
     }

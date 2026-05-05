@@ -2,6 +2,7 @@ package com.example.moodwheel.ui.screens
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -61,6 +62,14 @@ fun AddMoodScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val scroll = rememberScrollState()
+
+    BackHandler {
+        if (state.step > 1) {
+            viewModel.previousStep()
+        } else {
+            onClose()
+        }
+    }
 
     CalmBackground(modifier = Modifier.fillMaxSize()) {
         Column(

@@ -19,8 +19,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -41,6 +42,7 @@ import com.example.moodwheel.domain.model.MacroEmotion
 import com.example.moodwheel.domain.model.MoodEntry
 import com.example.moodwheel.ui.components.CalmBackground
 import com.example.moodwheel.ui.components.CalmCard
+import com.example.moodwheel.ui.components.GradientButton
 import com.example.moodwheel.ui.theme.color
 import java.time.LocalDate
 
@@ -65,20 +67,12 @@ fun CalendarScreen(
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onPreviousMonth) { Text("<") }
-                Text(
-                    text = state.visibleMonth.formatMonth(),
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                IconButton(onClick = onNextMonth) { Text(">") }
-            }
+            CalendarHeader(
+                month = state.visibleMonth.formatMonth(),
+                moments = state.monthEntries.size,
+                onPreviousMonth = onPreviousMonth,
+                onNextMonth = onNextMonth
+            )
 
             CalmCard(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -96,21 +90,24 @@ fun CalendarScreen(
                 }
             }
 
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                EmotionCatalog.emotions.forEach { emotion ->
-                    LegendItem(emotion)
-                }
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Box(
-                        modifier = Modifier
-                            .size(12.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
-                    )
-                    Text("Neutro / Misto", style = MaterialTheme.typography.labelMedium)
+            CalmCard(modifier = Modifier.fillMaxWidth()) {
+                FlowRow(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    EmotionCatalog.emotions.forEach { emotion ->
+                        LegendItem(emotion)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .size(12.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
+                        )
+                        Text("Neutro / Misto", style = MaterialTheme.typography.labelMedium)
+                    }
                 }
             }
         }
@@ -137,17 +134,61 @@ fun CalendarScreen(
                         )
                     }
                 }
-                Button(
+                GradientButton(
+                    text = "Aggiungi qui",
                     onClick = {
                         selectedDate = null
                         onAddMoodForDate(date)
                     },
                     modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Aggiungi qui")
-                }
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun CalendarHeader(
+    month: String,
+    moments: Int,
+    onPreviousMonth: () -> Unit,
+    onNextMonth: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        MonthButton("<", onPreviousMonth)
+        Column(
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(3.dp)
+        ) {
+            Text(month, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text("$moments momenti", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium)
+        }
+        MonthButton(">", onNextMonth)
+    }
+}
+
+@Composable
+private fun MonthButton(
+    label: String,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.size(44.dp),
+        shape = CircleShape,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFFFFFCF8),
+            contentColor = MaterialTheme.colorScheme.primary
+        ),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 1.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+    ) {
+        Text(label, fontWeight = FontWeight.Bold)
     }
 }
 
