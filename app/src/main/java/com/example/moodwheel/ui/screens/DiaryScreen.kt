@@ -3,14 +3,17 @@ package com.example.moodwheel.ui.screens
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AssistChip
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,6 +33,7 @@ import com.example.moodwheel.ui.components.CalmCard
 import com.example.moodwheel.ui.components.EmotionArtwork
 import com.example.moodwheel.ui.components.GradientButton
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DiaryScreen(
     entries: List<MoodEntry>,
@@ -38,9 +42,20 @@ fun DiaryScreen(
     modifier: Modifier = Modifier
 ) {
     var selectedEmotionId by remember { mutableStateOf<String?>(null) }
-    val filteredEntries = selectedEmotionId?.let { id ->
-        entries.filter { it.primaryEmotion.id == id }
-    } ?: entries
+    var query by remember { mutableStateOf("") }
+    val normalizedQuery = query.trim().lowercase()
+    val filteredEntries = entries.filter { entry ->
+        val matchesEmotion = selectedEmotionId == null || entry.primaryEmotion.id == selectedEmotionId
+        val searchable = buildString {
+            append(entry.primaryEmotion.label)
+            append(" ")
+            append(entry.secondaryEmotions.joinToString(" "))
+            append(" ")
+            append(entry.note)
+        }.lowercase()
+        val matchesQuery = normalizedQuery.isBlank() || searchable.contains(normalizedQuery)
+        matchesEmotion && matchesQuery
+    }
     val grouped = filteredEntries.groupBy { it.timestamp.toLocalDate() }
 
     CalmBackground(modifier = modifier.fillMaxSize()) {
@@ -55,32 +70,32 @@ fun DiaryScreen(
             }
 
             item {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                    AssistChip(
-                        onClick = { selectedEmotionId = null },
-                        label = { Text("Tutte") }
-                    )
-                }
-            }
-
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                    EmotionCatalog.emotions.take(3).forEach { emotion ->
-                        AssistChip(
-                            onClick = { selectedEmotionId = emotion.id },
-                            label = { Text(emotion.label) }
+                CalmCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        OutlinedTextField(
+                            value = query,
+                            onValueChange = { query = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            placeholder = { Text("Cerca note o emozioni") }
                         )
-                    }
-                }
-            }
-
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                    EmotionCatalog.emotions.drop(3).forEach { emotion ->
-                        AssistChip(
-                            onClick = { selectedEmotionId = emotion.id },
-                            label = { Text(emotion.label) }
-                        )
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            FilterChip(
+                                selected = selectedEmotionId == null,
+                                onClick = { selectedEmotionId = null },
+                                label = { Text("Tutte") }
+                            )
+                            EmotionCatalog.emotions.forEach { emotion ->
+                                FilterChip(
+                                    selected = selectedEmotionId == emotion.id,
+                                    onClick = { selectedEmotionId = emotion.id },
+                                    label = { Text(emotion.label) }
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -94,8 +109,8 @@ fun DiaryScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             AppIllustration(resId = R.drawable.empty_state)
-                            Text("Ancora nessun momento qui", fontWeight = FontWeight.SemiBold)
-                            Text("Quando vuoi, puoi aggiungere un check-in gentile.")
+                            Text("Nessun momento trovato", fontWeight = FontWeight.SemiBold)
+                            Text("Puoi cambiare ricerca o aggiungere un nuovo check-in.")
                             GradientButton("Aggiungi umore", onClick = onAddMood, modifier = Modifier.fillMaxWidth())
                         }
                     }

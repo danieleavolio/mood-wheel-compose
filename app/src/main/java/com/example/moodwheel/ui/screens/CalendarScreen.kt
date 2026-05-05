@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -170,7 +171,8 @@ private fun CalendarGrid(
             ) {
                 week.forEach { day ->
                     val date = day?.let { month.withDayOfMonth(it) }
-                    val emotion = date?.let { dominantEmotion(entriesByDay[it].orEmpty()) }
+                    val dayEntries = date?.let { entriesByDay[it].orEmpty() }.orEmpty()
+                    val emotion = dominantEmotion(dayEntries)
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -192,6 +194,23 @@ private fun CalendarGrid(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(day.toString(), style = MaterialTheme.typography.labelMedium)
+                            }
+                            if (dayEntries.size > 1) {
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .offset(x = (-8).dp, y = 6.dp)
+                                        .size(14.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primary),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = dayEntries.size.toString(),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                }
                             }
                         }
                     }
