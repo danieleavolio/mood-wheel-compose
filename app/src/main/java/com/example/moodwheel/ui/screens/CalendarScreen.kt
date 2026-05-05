@@ -35,11 +35,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.moodwheel.R
 import com.example.moodwheel.domain.model.EmotionCatalog
 import com.example.moodwheel.domain.model.MacroEmotion
 import com.example.moodwheel.domain.model.MoodEntry
-import com.example.moodwheel.ui.components.AppIllustration
 import com.example.moodwheel.ui.components.CalmBackground
 import com.example.moodwheel.ui.components.CalmCard
 import com.example.moodwheel.ui.theme.color
@@ -83,7 +81,6 @@ fun CalendarScreen(
 
             CalmCard(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    AppIllustration(resId = R.drawable.calendar_mood)
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         listOf("L", "M", "M", "G", "V", "S", "D").forEach {
                             Text(it, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)

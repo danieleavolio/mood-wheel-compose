@@ -154,6 +154,7 @@ private fun MoodApp(repository: MoodRepository) {
     ) { padding ->
         HorizontalPager(
             state = pagerState,
+            beyondViewportPageCount = 1,
             modifier = Modifier.padding(padding)
         ) { page ->
             when (tabs[page]) {
