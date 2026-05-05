@@ -22,7 +22,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.moodwheel.R
 import com.example.moodwheel.domain.model.MoodEntry
+import com.example.moodwheel.ui.components.AppIllustration
 import com.example.moodwheel.ui.components.CalmBackground
 import com.example.moodwheel.ui.components.CalmCard
 import com.example.moodwheel.ui.components.EmotionArtwork
@@ -60,6 +62,15 @@ fun StatsScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Text("Statistiche", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            CalmCard(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    AppIllustration(resId = R.drawable.stats_insight)
+                    Text(
+                        "Piccoli segnali, non voti.",
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 StatCard(title = "Momenti", value = weekEntries.size.toString(), modifier = Modifier.weight(1f))

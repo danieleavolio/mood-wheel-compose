@@ -32,33 +32,33 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.moodwheel.domain.model.EmotionCatalog
+import com.example.moodwheel.R
+import com.example.moodwheel.ui.components.AppIllustration
 import com.example.moodwheel.ui.components.CalmBackground
 import com.example.moodwheel.ui.components.CalmCard
-import com.example.moodwheel.ui.components.EmotionArtwork
 import com.example.moodwheel.ui.components.GradientButton
 
 private data class OnboardingPage(
     val title: String,
     val body: String,
-    val emotionId: String?
+    val imageRes: Int
 )
 
 private val onboardingPages = listOf(
     OnboardingPage(
         title = "Un check-in gentile",
         body = "In meno di 30 secondi puoi segnare come stai, senza giudizio e senza obiettivi da inseguire.",
-        emotionId = "happiness"
+        imageRes = R.drawable.onboarding_privacy
     ),
     OnboardingPage(
         title = "Le parole aiutano",
         body = "Parti da una categoria grande, poi scegli parole piu precise solo se ti va.",
-        emotionId = "fear"
+        imageRes = R.drawable.onboarding_wheel
     ),
     OnboardingPage(
         title = "Solo sul tuo telefono",
         body = "Nessun account. Nessuna sincronizzazione. Puoi esportare tutto in JSON quando vuoi.",
-        emotionId = null
+        imageRes = R.drawable.export_json
     )
 )
 
@@ -89,10 +89,7 @@ fun OnboardingScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(18.dp)
                     ) {
-                        EmotionArtwork(
-                            emotion = item.emotionId?.let(EmotionCatalog::byId),
-                            size = 150.dp
-                        )
+                        AppIllustration(resId = item.imageRes)
                         Text(
                             text = item.title,
                             style = MaterialTheme.typography.headlineSmall,

@@ -24,9 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.moodwheel.R
 import com.example.moodwheel.domain.model.EmotionCatalog
 import com.example.moodwheel.domain.model.MoodEntry
-import com.example.moodwheel.domain.model.MoodLevel
+import com.example.moodwheel.ui.components.AppIllustration
 import com.example.moodwheel.ui.components.CalmBackground
 import com.example.moodwheel.ui.components.CalmCard
 import com.example.moodwheel.ui.components.EmotionArtwork
@@ -83,7 +84,10 @@ private fun HeaderCard(latest: MoodEntry?) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            EmotionArtwork(emotion = latest?.primaryEmotion, size = 96.dp)
+            AppIllustration(
+                resId = R.drawable.home_checkin,
+                modifier = Modifier.weight(0.82f)
+            )
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("Ciao", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                 Text(
@@ -108,6 +112,7 @@ private fun LastEntryCard(entry: MoodEntry?) {
         ) {
             Text("Ultimo check-in", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
             if (entry == null) {
+                AppIllustration(resId = R.drawable.empty_state)
                 Text("Nessun momento registrato ancora.")
             } else {
                 Row(

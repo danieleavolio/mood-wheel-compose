@@ -2,14 +2,12 @@ package com.example.moodwheel.ui.screens
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,12 +17,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.moodwheel.R
+import com.example.moodwheel.ui.components.AppIllustration
 import com.example.moodwheel.ui.components.CalmBackground
 import com.example.moodwheel.ui.components.CalmCard
 import com.example.moodwheel.ui.components.EmotionArtwork
@@ -68,7 +67,7 @@ fun ExportScreen(
                     verticalArrangement = Arrangement.spacedBy(18.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    JsonIllustration()
+                    AppIllustration(resId = R.drawable.export_json)
                     Text("Esporta i tuoi momenti", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Text(
                         "Scarica tutti i tuoi dati in un file JSON per conservarli o portarli altrove.",
@@ -99,21 +98,5 @@ fun ExportScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun JsonIllustration() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFFE9E3FF), RoundedCornerShape(18.dp))
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text("{", style = MaterialTheme.typography.headlineLarge, color = Color(0xFF5D4AE3), fontWeight = FontWeight.Bold)
-        Text("\"momenti\": []", color = Color(0xFF5D4AE3), fontWeight = FontWeight.SemiBold)
-        Text("}", style = MaterialTheme.typography.headlineLarge, color = Color(0xFF5D4AE3), fontWeight = FontWeight.Bold)
     }
 }
