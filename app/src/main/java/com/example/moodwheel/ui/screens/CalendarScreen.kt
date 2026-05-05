@@ -19,6 +19,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -43,7 +45,7 @@ import com.example.moodwheel.ui.components.CalmCard
 import com.example.moodwheel.ui.theme.color
 import java.time.LocalDate
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
     state: CalendarUiState,
@@ -137,7 +139,7 @@ fun CalendarScreen(
                         )
                     }
                 }
-                androidx.compose.material3.Button(
+                Button(
                     onClick = {
                         selectedDate = null
                         onAddMoodForDate(date)
