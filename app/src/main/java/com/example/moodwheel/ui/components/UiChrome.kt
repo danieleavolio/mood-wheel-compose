@@ -1,6 +1,12 @@
 package com.example.moodwheel.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -11,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -45,6 +52,35 @@ fun GradientButton(
         )
     ) {
         Text(text)
+    }
+}
+
+@Composable
+fun StepProgress(
+    currentStep: Int,
+    totalSteps: Int,
+    modifier: Modifier = Modifier,
+    activeColor: Color = Color(0xFF5D4AE3),
+    inactiveColor: Color = Color(0xFFE9E6F6),
+    segmentWidth: Dp = 42.dp
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        repeat(totalSteps) { index ->
+            val isActive = index < currentStep
+            androidx.compose.foundation.layout.Box(
+                modifier = Modifier
+                    .padding(horizontal = 3.dp)
+                    .width(segmentWidth)
+                    .height(if (isActive) 4.dp else 3.dp)
+                    .background(
+                        color = if (isActive) activeColor else inactiveColor,
+                        shape = RoundedCornerShape(100.dp)
+                    )
+            )
+        }
     }
 }
 

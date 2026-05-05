@@ -51,7 +51,7 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Spacer(Modifier.height(8.dp))
-            HeaderCard(state.latest)
+            HomeHeader(state.latest)
             LastEntryCard(entry = state.latest)
             WeekSummary(entries = state.allEntries)
             CalmCard(modifier = Modifier.fillMaxWidth()) {
@@ -77,28 +77,30 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HeaderCard(latest: MoodEntry?) {
-    CalmCard(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            AppIllustration(
-                resId = R.drawable.home_checkin,
-                modifier = Modifier.weight(0.82f)
+private fun HomeHeader(latest: MoodEntry?) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("Ciao", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text(
+                text = if (latest == null) {
+                    "Come ti senti oggi?"
+                } else {
+                    "Come ti senti adesso?"
+                },
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Ciao", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                Text(
-                    text = if (latest == null) {
-                        "Ti va di registrare il primo momento?"
-                    } else {
-                        "Hai gia ascoltato come stavi oggi."
-                    },
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+        }
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("D", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -125,7 +127,7 @@ private fun LastEntryCard(entry: MoodEntry?) {
                         Text(entry.secondaryEmotions.joinToString(", ").ifBlank { "Solo categoria" })
                         Text("Oggi, ${entry.timestamp.formatTime()}", style = MaterialTheme.typography.labelMedium)
                     }
-                    EmotionArtwork(emotion = entry.primaryEmotion, size = 52.dp)
+                    Text(">", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 AnimatedVisibility(visible = entry.note.isNotBlank(), enter = fadeIn()) {
                     Text(
@@ -149,7 +151,14 @@ private fun WeekSummary(entries: List<MoodEntry>) {
             Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Text("Questa settimana", fontWeight = FontWeight.SemiBold)
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text("Panoramica settimana", fontWeight = FontWeight.SemiBold)
+                Text(
+                    "${entries.count { !it.timestamp.toLocalDate().isBefore(today.minusDays(6)) }} momenti registrati",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -177,11 +186,6 @@ private fun WeekSummary(entries: List<MoodEntry>) {
                     }
                 }
             }
-            Text(
-                text = "${entries.count { !it.timestamp.toLocalDate().isBefore(today.minusDays(6)) }} momenti registrati",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

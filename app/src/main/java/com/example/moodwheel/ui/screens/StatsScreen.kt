@@ -21,10 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.moodwheel.R
 import com.example.moodwheel.domain.model.MoodEntry
-import com.example.moodwheel.ui.components.AppIllustration
 import com.example.moodwheel.ui.components.CalmBackground
 import com.example.moodwheel.ui.components.CalmCard
 import com.example.moodwheel.ui.components.EmotionArtwork
@@ -62,21 +61,36 @@ fun StatsScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Text("Statistiche", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                RangePill("Settimana", selected = true, modifier = Modifier.weight(1f))
+                RangePill("Mese", selected = false, modifier = Modifier.weight(1f))
+                RangePill("Anno", selected = false, modifier = Modifier.weight(1f))
+            }
+
             CalmCard(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    AppIllustration(resId = R.drawable.stats_insight)
-                    Text(
-                        "Piccoli segnali, non voti.",
-                        fontWeight = FontWeight.SemiBold
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    MetricBlock("Momenti", weekEntries.size.toString(), Modifier.weight(1f))
+                    MetricBlock(
+                        "Frequenza",
+                        if (weekEntries.isEmpty()) "0%" else "${(weekEntries.size * 100 / 7).coerceAtMost(100)}%",
+                        Modifier.weight(1f)
+                    )
+                    MetricBlock(
+                        "Giorni",
+                        weekEntries.map { it.timestamp.toLocalDate() }.distinct().size.toString(),
+                        Modifier.weight(1f)
                     )
                 }
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                StatCard(title = "Momenti", value = weekEntries.size.toString(), modifier = Modifier.weight(1f))
+                StatCard(title = "Parole", value = weekEntries.flatMap { it.secondaryEmotions }.distinct().size.toString(), modifier = Modifier.weight(1f))
                 StatCard(
-                    title = "Giorni",
-                    value = weekEntries.map { it.timestamp.toLocalDate() }.distinct().size.toString(),
+                    title = "Note",
+                    value = weekEntries.count { it.note.isNotBlank() }.toString(),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -113,6 +127,38 @@ fun StatsScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun RangePill(
+    label: String,
+    selected: Boolean,
+    modifier: Modifier = Modifier
+) {
+    CalmCard(modifier = modifier) {
+        Text(
+            text = label,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp),
+            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun MetricBlock(
+    title: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text(title, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

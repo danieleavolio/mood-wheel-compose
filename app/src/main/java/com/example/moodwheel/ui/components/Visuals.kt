@@ -58,16 +58,21 @@ fun MoodOrb(
     size: Dp = 64.dp,
     selected: Boolean = false
 ) {
-    val transition = rememberInfiniteTransition(label = "moodOrb")
-    val breath by transition.animateFloat(
-        initialValue = 0.96f,
-        targetValue = 1.04f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1900),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "breath"
-    )
+    val breath = if (selected) {
+        val transition = rememberInfiniteTransition(label = "moodOrb")
+        val value by transition.animateFloat(
+            initialValue = 0.96f,
+            targetValue = 1.04f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1900),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "breath"
+        )
+        value
+    } else {
+        1f
+    }
 
     Canvas(
         modifier = modifier
@@ -86,16 +91,22 @@ fun MoodOrb(
 fun EmotionArtwork(
     emotion: MacroEmotion?,
     modifier: Modifier = Modifier,
-    size: Dp = 116.dp
+    size: Dp = 116.dp,
+    animated: Boolean = false
 ) {
     val base = emotion?.color() ?: MaterialTheme.colorScheme.primary
-    val transition = rememberInfiniteTransition(label = "emotionArtwork")
-    val drift by transition.animateFloat(
-        initialValue = -6f,
-        targetValue = 6f,
-        animationSpec = infiniteRepeatable(tween(2600), RepeatMode.Reverse),
-        label = "drift"
-    )
+    val drift = if (animated) {
+        val transition = rememberInfiniteTransition(label = "emotionArtwork")
+        val value by transition.animateFloat(
+            initialValue = -6f,
+            targetValue = 6f,
+            animationSpec = infiniteRepeatable(tween(2600), RepeatMode.Reverse),
+            label = "drift"
+        )
+        value
+    } else {
+        0f
+    }
 
     Canvas(modifier = modifier.size(size)) {
         val r = min(this.size.width, this.size.height) / 2f
