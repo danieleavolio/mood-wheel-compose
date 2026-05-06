@@ -2,8 +2,11 @@ package com.example.moodwheel.ui.screens
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,8 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -26,12 +29,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.moodwheel.domain.model.MacroEmotion
 import com.example.moodwheel.domain.model.MoodEntry
-import com.example.moodwheel.domain.model.MoodLevel
 import com.example.moodwheel.ui.components.CalmBackground
 import com.example.moodwheel.ui.components.CalmCard
 import com.example.moodwheel.ui.components.EmotionArtwork
@@ -67,6 +73,8 @@ fun EntryDetailScreen(
         selectedMicro = selectedMicro.intersect(emotion.microEmotions.toSet())
     }
 
+    BackHandler(onBack = onBack)
+
     CalmBackground(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -79,24 +87,42 @@ fun EntryDetailScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedButton(onClick = onBack) { Text("Indietro") }
+                TextButton(onClick = onBack) { Text("<") }
                 Text(
                     "Dettaglio momento",
                     modifier = Modifier.weight(1f),
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center
                 )
+                TextButton(onClick = { showDeleteDialog = true }) {
+                    Text("Elimina", color = Color(0xFFE45252))
+                }
             }
 
-            CalmCard(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(30.dp))
+                    .background(
+                        Brush.linearGradient(
+                            listOf(selectedMacro.softColor(), Color(0xFFFFFCF8))
+                        )
+                    )
+                    .padding(20.dp)
+            ) {
                 Column(
-                    modifier = Modifier.padding(18.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     EmotionArtwork(emotion = selectedMacro, size = 110.dp)
                     Text(selectedMacro.label, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    Text("${date.formatDate()} · %02d:%02d".format(time.hour, time.minute))
-                    Text(selectedMicro.joinToString(", ").ifBlank { "Solo categoria" })
+                    Text("${date.formatDate()} - %02d:%02d".format(time.hour, time.minute))
+                    Text(
+                        selectedMicro.joinToString(", ").ifBlank { "Solo categoria" },
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
@@ -135,7 +161,8 @@ fun EntryDetailScreen(
             CalmCard(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("Data e ora", fontWeight = FontWeight.SemiBold)
-                    OutlinedButton(
+                    DetailPill(
+                        label = date.formatDate(),
                         onClick = {
                             DatePickerDialog(
                                 context,
@@ -144,12 +171,10 @@ fun EntryDetailScreen(
                                 date.monthValue - 1,
                                 date.dayOfMonth
                             ).show()
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(date.formatDate())
-                    }
-                    OutlinedButton(
+                        }
+                    )
+                    DetailPill(
+                        label = "%02d:%02d".format(time.hour, time.minute),
                         onClick = {
                             TimePickerDialog(
                                 context,
@@ -158,11 +183,8 @@ fun EntryDetailScreen(
                                 time.minute,
                                 true
                             ).show()
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("%02d:%02d".format(time.hour, time.minute))
-                    }
+                        }
+                    )
                 }
             }
 
@@ -172,9 +194,18 @@ fun EntryDetailScreen(
                     OutlinedTextField(
                         value = note,
                         onValueChange = { note = it.take(300) },
-                        modifier = Modifier.fillMaxWidth().height(180.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp),
                         minLines = 5,
-                        placeholder = { Text("Aggiungi o modifica una nota.") }
+                        placeholder = { Text("Aggiungi o modifica una nota.") },
+                        shape = RoundedCornerShape(18.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedContainerColor = Color(0xFFF8F4FF),
+                            unfocusedContainerColor = Color(0xFFF8F4FF)
+                        )
                     )
                 }
             }
@@ -199,12 +230,6 @@ fun EntryDetailScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             )
-            OutlinedButton(
-                onClick = { showDeleteDialog = true },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Elimina momento")
-            }
         }
     }
 
@@ -230,6 +255,24 @@ fun EntryDetailScreen(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun DetailPill(
+    label: String,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(Color(0xFFF1EDFF))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(label, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
     }
 }
 

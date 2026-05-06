@@ -1,18 +1,18 @@
 package com.example.moodwheel
 
+import android.app.Activity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -21,12 +21,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -101,12 +103,24 @@ private fun MoodApp(repository: MoodRepository) {
     val tabs = listOf(Tab.Home, Tab.Calendar, Tab.Stats, Tab.Diary, Tab.Export)
     val pagerState = rememberPagerState(pageCount = { tabs.size })
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    var lastBackPress by remember { mutableLongStateOf(0L) }
 
     val calendarVm: CalendarStatsViewModel = viewModel(factory = CalendarStatsViewModelFactory(repository))
     val entries by calendarVm.allEntries.collectAsStateWithLifecycle()
 
     BackHandler(enabled = mode == AppMode.Main && pagerState.currentPage != 0) {
         scope.launch { pagerState.animateScrollToPage(0) }
+    }
+
+    BackHandler(enabled = mode == AppMode.Main && pagerState.currentPage == 0) {
+        val now = System.currentTimeMillis()
+        if (now - lastBackPress < 1800) {
+            (context as? Activity)?.finish()
+        } else {
+            lastBackPress = now
+            Toast.makeText(context, "Premi ancora per uscire", Toast.LENGTH_SHORT).show()
+        }
     }
 
     fun openAdd(date: LocalDate? = null) {

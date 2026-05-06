@@ -33,7 +33,6 @@ import com.example.moodwheel.domain.model.MoodEntry
 import com.example.moodwheel.ui.components.AppIllustration
 import com.example.moodwheel.ui.components.CalmBackground
 import com.example.moodwheel.ui.components.CalmCard
-import com.example.moodwheel.ui.components.EmotionArtwork
 import com.example.moodwheel.ui.components.GradientButton
 import com.example.moodwheel.ui.components.MoodOrb
 import com.example.moodwheel.ui.theme.color
@@ -57,25 +56,46 @@ fun HomeScreen(
             HomeHeader(state.latest)
             LastEntryCard(entry = state.latest)
             WeekSummary(entries = state.allEntries)
-            CalmCard(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    EmotionArtwork(emotion = null, size = 72.dp)
-                    Column {
-                        Text("Una nota gentile", fontWeight = FontWeight.SemiBold)
-                        Text("Non devi spiegare tutto. Anche un check-in piccolo va bene.")
-                    }
-                }
-            }
+            PrinciplesCard()
             GradientButton(
                 text = "Aggiungi umore",
                 onClick = onAddMood,
                 modifier = Modifier.fillMaxWidth()
             )
         }
+    }
+}
+
+@Composable
+private fun PrinciplesCard() {
+    CalmCard(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Text("Calma, non controllo", fontWeight = FontWeight.SemiBold)
+            Text(
+                "Un check-in breve. Nessun account. Nessuna pressione.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                PrinciplePill("30 sec")
+                PrinciplePill("Solo locale")
+                PrinciplePill("No giudizi")
+            }
+        }
+    }
+}
+
+@Composable
+private fun PrinciplePill(label: String) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(100.dp))
+            .background(Color(0xFFF1EDFF))
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
+        Text(label, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
     }
 }
 
