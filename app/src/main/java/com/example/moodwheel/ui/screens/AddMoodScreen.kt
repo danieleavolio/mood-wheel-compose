@@ -22,7 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -182,10 +182,11 @@ private fun EmotionStep(
                 )
             }
         } else {
-            ElevatedCard(
+            Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.elevatedCardColors(containerColor = selected.softColor())
+                colors = CardDefaults.cardColors(containerColor = selected.softColor()),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Column(
                     modifier = Modifier
@@ -295,7 +296,7 @@ private fun TimeTile(
             containerColor = Color(0xFFFFFCF8),
             contentColor = Color(0xFF221B38)
         ),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp, pressedElevation = 2.dp)
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp, pressedElevation = 0.dp)
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(value, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold)

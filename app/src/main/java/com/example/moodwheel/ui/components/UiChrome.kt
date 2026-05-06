@@ -1,7 +1,6 @@
 package com.example.moodwheel.ui.components
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -39,10 +38,10 @@ fun CalmCard(
     content: @Composable () -> Unit
 ) {
     Card(
-        modifier = modifier.animateContentSize(),
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFCF8)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFCF8).copy(alpha = 0.92f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         content = { content() }
     )
 }
@@ -96,7 +95,7 @@ fun SecondaryButton(
             containerColor = Color(0xFFF1EDFF),
             contentColor = MaterialTheme.colorScheme.primary
         ),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp, pressedElevation = 1.dp)
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp, pressedElevation = 0.dp)
     ) {
         Text(text, fontWeight = FontWeight.SemiBold)
     }

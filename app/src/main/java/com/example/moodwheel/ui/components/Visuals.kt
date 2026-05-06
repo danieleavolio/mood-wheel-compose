@@ -1,10 +1,5 @@
 package com.example.moodwheel.ui.components
 
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -13,7 +8,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -58,25 +52,9 @@ fun MoodOrb(
     size: Dp = 64.dp,
     selected: Boolean = false
 ) {
-    val breath = if (selected) {
-        val transition = rememberInfiniteTransition(label = "moodOrb")
-        val value by transition.animateFloat(
-            initialValue = 0.96f,
-            targetValue = 1.04f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(1900),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "breath"
-        )
-        value
-    } else {
-        1f
-    }
-
     Canvas(
         modifier = modifier
-            .size(if (selected) size * breath else size)
+            .size(size)
             .clip(CircleShape)
     ) {
         val radius = min(this.size.width, this.size.height) / 2f
@@ -95,18 +73,7 @@ fun EmotionArtwork(
     animated: Boolean = false
 ) {
     val base = emotion?.color() ?: MaterialTheme.colorScheme.primary
-    val drift = if (animated) {
-        val transition = rememberInfiniteTransition(label = "emotionArtwork")
-        val value by transition.animateFloat(
-            initialValue = -6f,
-            targetValue = 6f,
-            animationSpec = infiniteRepeatable(tween(2600), RepeatMode.Reverse),
-            label = "drift"
-        )
-        value
-    } else {
-        0f
-    }
+    val drift = 0f
 
     Canvas(modifier = modifier.size(size)) {
         val r = min(this.size.width, this.size.height) / 2f

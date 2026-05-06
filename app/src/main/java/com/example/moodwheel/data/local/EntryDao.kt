@@ -20,6 +20,9 @@ interface EntryDao {
     @Query("SELECT COUNT(*) FROM entries")
     suspend fun count(): Int
 
+    @Query("SELECT COUNT(*) FROM entries WHERE timestamp BETWEEN :start AND :end")
+    suspend fun countBetween(start: Long, end: Long): Int
+
     @Insert
     suspend fun insert(entry: EntryEntity): Long
 

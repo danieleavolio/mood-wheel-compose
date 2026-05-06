@@ -1,7 +1,6 @@
 package com.example.moodwheel.ui.components
 
 import android.graphics.Paint
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -37,11 +35,6 @@ fun EmotionWheel(
     val emotions = EmotionCatalog.emotions
     val textColor = MaterialTheme.colorScheme.onSurface
     val centerTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-    val selectedPulse by animateFloatAsState(
-        targetValue = if (selected == null) 0f else 1f,
-        label = "selectedPulse"
-    )
-
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -67,7 +60,7 @@ fun EmotionWheel(
 
             emotions.forEachIndexed { index, emotion ->
                 val isSelected = selected?.id == emotion.id
-                val extra = if (isSelected) 12f + selectedPulse * 3f else 0f
+                val extra = if (isSelected) 12f else 0f
                 val segmentRadius = radius - 10f + extra
                 val topLeft = Offset(center.x - segmentRadius, center.y - segmentRadius)
                 val segmentSize = Size(segmentRadius * 2f, segmentRadius * 2f)

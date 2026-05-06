@@ -1,13 +1,17 @@
 package com.example.moodwheel
 
 import android.app.Activity
+import android.Manifest
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.compose.animation.animateColorAsState
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,6 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moodwheel.data.repository.MoodRepository
 import com.example.moodwheel.ui.components.NavGlyph
+import com.example.moodwheel.reminder.ReminderScheduler
 import com.example.moodwheel.ui.screens.AddMoodScreen
 import com.example.moodwheel.ui.screens.AddMoodViewModelFactory
 import com.example.moodwheel.ui.screens.CalendarScreen
@@ -50,12 +55,14 @@ import com.example.moodwheel.ui.screens.HomeViewModelFactory
 import com.example.moodwheel.ui.screens.OnboardingScreen
 import com.example.moodwheel.ui.screens.StatsScreen
 import com.example.moodwheel.ui.theme.MoodWheelTheme
+import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ReminderScheduler.setup(this)
         val repository = (application as MoodWheelApplication).container.repository
         val prefs = getSharedPreferences("mood_wheel_prefs", MODE_PRIVATE)
         setContent {
@@ -122,12 +129,23 @@ private fun MoodApp(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var lastBackPress by remember { mutableLongStateOf(0L) }
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {}
 
     val calendarVm: CalendarStatsViewModel = viewModel(factory = CalendarStatsViewModelFactory(repository))
     val entries by calendarVm.allEntries.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
     BackHandler(enabled = mode == AppMode.Main && pagerState.currentPage != 0) {
-        scope.launch { pagerState.animateScrollToPage(0) }
+        scope.launch { pagerState.scrollToPage(0) }
     }
 
     BackHandler(enabled = mode == AppMode.Main && pagerState.currentPage == 0) {
@@ -201,25 +219,21 @@ private fun MoodApp(
             ) {
                 tabs.forEachIndexed { index, item ->
                     val selected = pagerState.currentPage == index
-                    val indicator by animateColorAsState(
-                        targetValue = if (selected) Color(0xFFECE7FF) else Color.Transparent,
-                        label = "navIndicator"
-                    )
                     NavigationBarItem(
                         selected = selected,
                         onClick = {
                             scope.launch {
-                                pagerState.animateScrollToPage(index)
+                                pagerState.scrollToPage(index)
                             }
                         },
                         icon = { NavGlyph(tabIcon(item), selected = selected) },
-                        label = { Text(tabLabel(item)) },
+                        label = null,
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = Color(0xFF5D4AE3),
                             selectedTextColor = Color(0xFF5D4AE3),
                             unselectedIconColor = Color(0xFF827A95),
                             unselectedTextColor = Color(0xFF827A95),
-                            indicatorColor = indicator
+                            indicatorColor = if (selected) Color(0xFFECE7FF) else Color.Transparent
                         )
                     )
                 }
@@ -228,7 +242,7 @@ private fun MoodApp(
     ) { padding ->
         HorizontalPager(
             state = pagerState,
-            beyondViewportPageCount = 1,
+            beyondViewportPageCount = 0,
             modifier = Modifier.padding(padding)
         ) { page ->
             when (tabs[page]) {

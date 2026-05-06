@@ -1,9 +1,6 @@
 package com.example.moodwheel.ui.components
 
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -76,11 +72,8 @@ private fun MoodListChoice(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    val background by animateColorAsState(
-        targetValue = if (selected) levelColor(level).copy(alpha = 0.14f) else Color.Transparent,
-        label = "moodRowBackground"
-    )
-    val orbSize by animateDpAsState(if (selected) 62.dp else 44.dp, label = "moodRowOrb")
+    val background = if (selected) levelColor(level).copy(alpha = 0.14f) else Color.Transparent
+    val orbSize = if (selected) 62.dp else 44.dp
 
     Row(
         modifier = Modifier
@@ -119,7 +112,7 @@ private fun MoodChoice(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val size by animateDpAsState(if (selected) 72.dp else 54.dp, label = "moodSize")
+    val size = if (selected) 72.dp else 54.dp
     Column(
         modifier = modifier
             .clickable(onClick = onClick)
@@ -128,13 +121,7 @@ private fun MoodChoice(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Box(
-            modifier = Modifier
-                .border(
-                    width = if (selected) 3.dp else 0.dp,
-                    color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                    shape = CircleShape
-                )
-                .padding(4.dp),
+            modifier = Modifier.padding(4.dp),
             contentAlignment = Alignment.Center
         ) {
             MoodOrb(level = level, size = size, selected = selected)

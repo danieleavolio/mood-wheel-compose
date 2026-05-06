@@ -1,7 +1,6 @@
 package com.example.moodwheel.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,11 +12,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -185,7 +184,7 @@ private fun MonthButton(
             containerColor = Color(0xFFFFFCF8),
             contentColor = MaterialTheme.colorScheme.primary
         ),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 1.dp),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp, pressedElevation = 0.dp),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
     ) {
         Text(label, fontWeight = FontWeight.Bold)
@@ -217,42 +216,17 @@ private fun CalendarGrid(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .aspectRatio(1f),
+                            .padding(2.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         if (day != null) {
-                            Box(
-                                modifier = Modifier
-                                    .size(34.dp)
-                                    .clip(CircleShape)
-                                    .clickable { date?.let(onDayClick) }
-                                    .background(emotion?.color() ?: MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
-                                    .border(
-                                        width = if (date == LocalDate.now()) 2.dp else 0.dp,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        shape = CircleShape
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(day.toString(), style = MaterialTheme.typography.labelMedium)
-                            }
-                            if (dayEntries.size > 1) {
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .offset(x = (-8).dp, y = 6.dp)
-                                        .size(14.dp)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.primary),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = dayEntries.size.toString(),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onPrimary
-                                    )
-                                }
-                            }
+                            CalendarDayCell(
+                                day = day,
+                                date = date,
+                                emotion = emotion,
+                                count = dayEntries.size,
+                                onClick = { date?.let(onDayClick) }
+                            )
                         }
                     }
                 }
@@ -260,6 +234,37 @@ private fun CalendarGrid(
                     Spacer(Modifier.weight(1f))
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun CalendarDayCell(
+    day: Int,
+    date: LocalDate?,
+    emotion: MacroEmotion?,
+    count: Int,
+    onClick: () -> Unit
+) {
+    val isToday = date == LocalDate.now()
+    val background = emotion?.color()?.copy(alpha = 0.78f)
+        ?: if (isToday) Color(0xFFECE7FF) else Color.Transparent
+    val textColor = if (emotion == null) MaterialTheme.colorScheme.onSurface else Color(0xFF1F1A28)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(12.dp))
+            .background(background)
+            .clickable(onClick = onClick)
+            .padding(4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(day.toString(), style = MaterialTheme.typography.labelLarge, color = textColor, fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal)
+        if (count > 1) {
+            Text("$count", style = MaterialTheme.typography.labelSmall, color = textColor.copy(alpha = 0.72f))
         }
     }
 }
