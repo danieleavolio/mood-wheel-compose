@@ -1,6 +1,7 @@
 package com.example.moodwheel
 
 import android.app.Activity
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -64,7 +65,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 if (onboardingDone) {
-                    MoodApp(repository)
+                    MoodApp(repository = repository, prefs = prefs)
                 } else {
                     OnboardingScreen(
                         onDone = {
@@ -92,13 +93,29 @@ private enum class Tab {
     Export
 }
 
+private data class LocalProfile(
+    val name: String,
+    val avatarPath: String?
+)
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun MoodApp(repository: MoodRepository) {
+private fun MoodApp(
+    repository: MoodRepository,
+    prefs: SharedPreferences
+) {
     var mode by remember { mutableStateOf(AppMode.Main) }
     var addInitialDate by remember { mutableStateOf<LocalDate?>(null) }
     var addSession by remember { mutableIntStateOf(0) }
     var selectedEntryId by remember { mutableStateOf<Long?>(null) }
+    var profile by remember {
+        mutableStateOf(
+            LocalProfile(
+                name = prefs.getString("profile_name", "Daniele") ?: "Daniele",
+                avatarPath = prefs.getString("profile_avatar_path", null)
+            )
+        )
+    }
 
     val tabs = listOf(Tab.Home, Tab.Calendar, Tab.Stats, Tab.Diary, Tab.Export)
     val pagerState = rememberPagerState(pageCount = { tabs.size })
@@ -127,6 +144,17 @@ private fun MoodApp(repository: MoodRepository) {
         addInitialDate = date
         addSession += 1
         mode = AppMode.Add
+    }
+
+    fun updateName(name: String) {
+        val clean = name.take(24)
+        profile = profile.copy(name = clean)
+        prefs.edit().putString("profile_name", clean).apply()
+    }
+
+    fun updateAvatar(path: String) {
+        profile = profile.copy(avatarPath = path)
+        prefs.edit().putString("profile_avatar_path", path).apply()
     }
 
     when (mode) {
@@ -209,6 +237,8 @@ private fun MoodApp(repository: MoodRepository) {
                     val state by homeViewModel.uiState.collectAsStateWithLifecycle()
                     HomeScreen(
                         state = state,
+                        profileName = profile.name,
+                        avatarPath = profile.avatarPath,
                         onAddMood = { openAdd() }
                     )
                 }
@@ -244,7 +274,11 @@ private fun MoodApp(repository: MoodRepository) {
 
                 Tab.Export -> {
                     ExportScreen(
-                        viewModel = viewModel(factory = ExportViewModelFactory(repository))
+                        viewModel = viewModel(factory = ExportViewModelFactory(repository)),
+                        profileName = profile.name,
+                        avatarPath = profile.avatarPath,
+                        onNameChange = ::updateName,
+                        onAvatarChange = ::updateAvatar
                     )
                 }
             }
@@ -258,7 +292,7 @@ private fun tabLabel(tab: Tab): String =
         Tab.Calendar -> "Calendario"
         Tab.Stats -> "Statistiche"
         Tab.Diary -> "Diario"
-        Tab.Export -> "Esporta"
+        Tab.Export -> "Altro"
     }
 
 private fun tabIcon(tab: Tab): String =

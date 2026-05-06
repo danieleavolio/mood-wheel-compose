@@ -35,12 +35,15 @@ import com.example.moodwheel.ui.components.CalmBackground
 import com.example.moodwheel.ui.components.CalmCard
 import com.example.moodwheel.ui.components.GradientButton
 import com.example.moodwheel.ui.components.MoodOrb
+import com.example.moodwheel.ui.components.ProfileAvatar
 import com.example.moodwheel.ui.theme.color
 import java.time.LocalDate
 
 @Composable
 fun HomeScreen(
     state: HomeUiState,
+    profileName: String,
+    avatarPath: String?,
     onAddMood: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -53,7 +56,11 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Spacer(Modifier.height(8.dp))
-            HomeHeader(state.latest)
+            HomeHeader(
+                latest = state.latest,
+                profileName = profileName,
+                avatarPath = avatarPath
+            )
             LastEntryCard(entry = state.latest)
             WeekSummary(entries = state.allEntries)
             PrinciplesCard()
@@ -100,7 +107,11 @@ private fun PrinciplePill(label: String) {
 }
 
 @Composable
-private fun HomeHeader(latest: MoodEntry?) {
+private fun HomeHeader(
+    latest: MoodEntry?,
+    profileName: String,
+    avatarPath: String?
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -115,7 +126,7 @@ private fun HomeHeader(latest: MoodEntry?) {
     ) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                "Ciao, Daniele",
+                "Ciao, ${profileName.trim().ifBlank { "Daniele" }}",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -136,7 +147,11 @@ private fun HomeHeader(latest: MoodEntry?) {
                 .background(Color.White.copy(alpha = 0.22f)),
             contentAlignment = Alignment.Center
         ) {
-            Text("D", color = Color.White, fontWeight = FontWeight.Bold)
+            ProfileAvatar(
+                name = profileName,
+                avatarPath = avatarPath,
+                size = 48.dp
+            )
         }
     }
 }
