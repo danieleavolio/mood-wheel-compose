@@ -16,17 +16,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 object MoodColors {
-    val Cream = Color(0xFFFFFAF0)
-    val WarmSurface = Color(0xFFFFFCF7)
-    val SoftSurface = Color(0xFFF8F2E8)
+    val Cream = Color(0xFFFFF3E2)
+    val WarmSurface = Color(0xFFFFEAD1)
+    val SoftSurface = Color(0xFFF3E2CC)
     val Lavender = Color(0xFF9B8AD6)
-    val LavenderSoft = Color(0xFFE8E1F7)
+    val LavenderSoft = Color(0xFFE5DAF2)
     val Sage = Color(0xFFAFC7A2)
-    val SageSoft = Color(0xFFE6EFDE)
+    val SageSoft = Color(0xFFDDEBD4)
     val DustyBlue = Color(0xFFA9C6DD)
-    val DustyBlueSoft = Color(0xFFE4EEF6)
+    val DustyBlueSoft = Color(0xFFDCECF4)
     val Apricot = Color(0xFFF5B98E)
-    val ApricotSoft = Color(0xFFFBE7D7)
+    val ApricotSoft = Color(0xFFF7DDC7)
     val Butter = Color(0xFFF6D98E)
     val Ink = Color(0xFF243044)
     val MutedInk = Color(0xFF6F7685)
@@ -71,8 +71,8 @@ private val LightColors: ColorScheme = lightColorScheme(
     onSurface = MoodColors.Ink,
     surfaceVariant = MoodColors.SoftSurface,
     onSurfaceVariant = MoodColors.MutedInk,
-    outline = Color(0xFFDAD2C6),
-    outlineVariant = Color(0xFFECE3D7)
+    outline = Color(0xFFCDBDAA),
+    outlineVariant = Color(0xFFE1CFBA)
 )
 
 private val DarkColors: ColorScheme = darkColorScheme(

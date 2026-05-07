@@ -12,13 +12,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -31,7 +28,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,7 +54,6 @@ import com.example.moodwheel.ui.screens.OnboardingScreen
 import com.example.moodwheel.ui.screens.StatsScreen
 import com.example.moodwheel.ui.theme.MoodWheelTheme
 import androidx.compose.runtime.LaunchedEffect
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
@@ -125,7 +120,6 @@ private data class LocalProfile(
     val avatarPath: String?
 )
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MoodApp(
     repository: MoodRepository,
@@ -147,8 +141,7 @@ private fun MoodApp(
     }
 
     val tabs = listOf(Tab.Home, Tab.Calendar, Tab.Stats, Tab.Diary, Tab.Export)
-    val pagerState = rememberPagerState(pageCount = { tabs.size })
-    val scope = rememberCoroutineScope()
+    var selectedTab by remember { mutableStateOf(Tab.Home) }
     val context = LocalContext.current
     var lastBackPress by remember { mutableLongStateOf(0L) }
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -166,11 +159,11 @@ private fun MoodApp(
         }
     }
 
-    BackHandler(enabled = mode == AppMode.Main && pagerState.currentPage != 0) {
-        scope.launch { pagerState.scrollToPage(0) }
+    BackHandler(enabled = mode == AppMode.Main && selectedTab != Tab.Home) {
+        selectedTab = Tab.Home
     }
 
-    BackHandler(enabled = mode == AppMode.Main && pagerState.currentPage == 0) {
+    BackHandler(enabled = mode == AppMode.Main && selectedTab == Tab.Home) {
         val now = System.currentTimeMillis()
         if (now - lastBackPress < 1800) {
             (context as? Activity)?.finish()
@@ -239,15 +232,11 @@ private fun MoodApp(
                     .background(Color.Transparent)
                     .padding(horizontal = 10.dp, vertical = 8.dp)
             ) {
-                tabs.forEachIndexed { index, item ->
-                    val selected = pagerState.currentPage == index
+                tabs.forEach { item ->
+                    val selected = selectedTab == item
                     NavigationBarItem(
                         selected = selected,
-                        onClick = {
-                            scope.launch {
-                                pagerState.scrollToPage(index)
-                            }
-                        },
+                        onClick = { selectedTab = item },
                         icon = { NavGlyph(tabIcon(item), selected = selected) },
                         label = { Text(tabLabel(item)) },
                         colors = NavigationBarItemDefaults.colors(
@@ -262,63 +251,61 @@ private fun MoodApp(
             }
         }
     ) { padding ->
-        HorizontalPager(
-            state = pagerState,
-            beyondViewportPageCount = 0,
-            modifier = Modifier.padding(padding)
-        ) { page ->
-            when (tabs[page]) {
-                Tab.Home -> {
-                    val homeViewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(repository))
-                    val state by homeViewModel.uiState.collectAsStateWithLifecycle()
-                    HomeScreen(
-                        state = state,
-                        profileName = profile.name,
-                        avatarPath = profile.avatarPath,
-                        onAddMood = { openAdd() }
-                    )
-                }
+        when (selectedTab) {
+            Tab.Home -> {
+                val homeViewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(repository))
+                val state by homeViewModel.uiState.collectAsStateWithLifecycle()
+                HomeScreen(
+                    state = state,
+                    profileName = profile.name,
+                    avatarPath = profile.avatarPath,
+                    onAddMood = { openAdd() },
+                    modifier = Modifier.padding(padding)
+                )
+            }
 
-                Tab.Calendar -> {
-                    val state by calendarVm.calendarUiState.collectAsStateWithLifecycle()
-                    CalendarScreen(
-                        state = state,
-                        onPreviousMonth = calendarVm::previousMonth,
-                        onNextMonth = calendarVm::nextMonth,
-                        onEntryClick = { entry ->
-                            selectedEntryId = entry.id
-                            mode = AppMode.Detail
-                        },
-                        onAddMoodForDate = { date -> openAdd(date) }
-                    )
-                }
+            Tab.Calendar -> {
+                val state by calendarVm.calendarUiState.collectAsStateWithLifecycle()
+                CalendarScreen(
+                    state = state,
+                    onPreviousMonth = calendarVm::previousMonth,
+                    onNextMonth = calendarVm::nextMonth,
+                    onEntryClick = { entry ->
+                        selectedEntryId = entry.id
+                        mode = AppMode.Detail
+                    },
+                    onAddMoodForDate = { date -> openAdd(date) },
+                    modifier = Modifier.padding(padding)
+                )
+            }
 
-                Tab.Stats -> {
-                    StatsScreen(entries = entries)
-                }
+            Tab.Stats -> {
+                StatsScreen(entries = entries, modifier = Modifier.padding(padding))
+            }
 
-                Tab.Diary -> {
-                    DiaryScreen(
-                        entries = entries,
-                        onEntryClick = { entry ->
-                            selectedEntryId = entry.id
-                            mode = AppMode.Detail
-                        },
-                        onAddMood = { openAdd() }
-                    )
-                }
+            Tab.Diary -> {
+                DiaryScreen(
+                    entries = entries,
+                    onEntryClick = { entry ->
+                        selectedEntryId = entry.id
+                        mode = AppMode.Detail
+                    },
+                    onAddMood = { openAdd() },
+                    modifier = Modifier.padding(padding)
+                )
+            }
 
-                Tab.Export -> {
-                    ExportScreen(
-                        viewModel = viewModel(factory = ExportViewModelFactory(repository)),
-                        profileName = profile.name,
-                        avatarPath = profile.avatarPath,
-                        onNameChange = ::updateName,
-                        onAvatarChange = ::updateAvatar,
-                        darkTheme = darkTheme,
-                        onDarkThemeChange = onDarkThemeChange
-                    )
-                }
+            Tab.Export -> {
+                ExportScreen(
+                    viewModel = viewModel(factory = ExportViewModelFactory(repository)),
+                    profileName = profile.name,
+                    avatarPath = profile.avatarPath,
+                    onNameChange = ::updateName,
+                    onAvatarChange = ::updateAvatar,
+                    darkTheme = darkTheme,
+                    onDarkThemeChange = onDarkThemeChange,
+                    modifier = Modifier.padding(padding)
+                )
             }
         }
     }
