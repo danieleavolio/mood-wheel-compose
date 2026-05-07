@@ -1,0 +1,49 @@
+name: Capture Android Screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.10.2
+
+      - name: Capture screenshots on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          script: |
+            gradle :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.example.moodwheel.ScreenshotCaptureTest
+            mkdir -p screenshots
+            adb pull /sdcard/Android/data/com.example.moodwheel/files/screenshots screenshots || true
+            find screenshots -type f -maxdepth 3 -print
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: mood-wheel-screenshots
+          path: screenshots/**/*.png
