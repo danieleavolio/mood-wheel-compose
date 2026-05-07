@@ -2,197 +2,306 @@ package com.example.moodwheel.ui.screens
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.moodwheel.domain.model.EmotionCatalog
+import com.example.moodwheel.domain.model.MacroEmotion
 import com.example.moodwheel.domain.model.MoodEntry
 import com.example.moodwheel.ui.components.CalmBackground
 import com.example.moodwheel.ui.components.CalmCard
-import com.example.moodwheel.ui.components.EmotionArtwork
 import com.example.moodwheel.ui.theme.color
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+
+private enum class StatsRange(val label: String) {
+    Week("Settimana"),
+    Month("Mese"),
+    Year("Anno")
+}
 
 @Composable
 fun StatsScreen(
     entries: List<MoodEntry>,
     modifier: Modifier = Modifier
 ) {
-    val weekStart = LocalDate.now().minusDays(6)
-    val weekEntries = entries.filter { !it.timestamp.toLocalDate().isBefore(weekStart) }
-    val prevalent = weekEntries
-        .groupingBy { it.primaryEmotion.id }
-        .eachCount()
-        .maxByOrNull { it.value }
-        ?.key
-        ?.let { id -> weekEntries.first { it.primaryEmotion.id == id }.primaryEmotion }
-    val mostUsedWords = weekEntries
-        .flatMap { it.secondaryEmotions }
-        .groupingBy { it }
-        .eachCount()
-        .entries
-        .sortedByDescending { it.value }
-        .take(3)
-        .joinToString(", ") { it.key }
+    var range by remember { mutableStateOf(StatsRange.Week) }
+    val today = LocalDate.now()
+    val start = when (range) {
+        StatsRange.Week -> today.minusDays(6)
+        StatsRange.Month -> today.withDayOfMonth(1)
+        StatsRange.Year -> today.withDayOfYear(1)
+    }
+    val rangeEntries = entries.filter { !it.timestamp.toLocalDate().isBefore(start) }
+    val activeDays = rangeEntries.map { it.timestamp.toLocalDate() }.distinct().size
+    val totalDays = when (range) {
+        StatsRange.Week -> 7
+        StatsRange.Month -> today.lengthOfMonth()
+        StatsRange.Year -> today.lengthOfYear()
+    }
+    val words = rangeEntries.flatMap { it.secondaryEmotions }.distinct().size
+    val notes = rangeEntries.count { it.note.isNotBlank() }
+    val averageMood = rangeEntries.map { it.moodLevel.value }.average().takeIf { !it.isNaN() } ?: 0.0
+    val distribution = emotionDistribution(rangeEntries)
 
     CalmBackground(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .padding(horizontal = 18.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text("Statistiche", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                RangePill("Settimana", selected = true, modifier = Modifier.weight(1f))
-                RangePill("Mese", selected = false, modifier = Modifier.weight(1f))
-                RangePill("Anno", selected = false, modifier = Modifier.weight(1f))
-            }
-
-            CalmCard(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    MetricBlock("Momenti", weekEntries.size.toString(), Modifier.weight(1f))
-                    MetricBlock(
-                        "Frequenza",
-                        if (weekEntries.isEmpty()) "0%" else "${(weekEntries.size * 100 / 7).coerceAtMost(100)}%",
-                        Modifier.weight(1f)
-                    )
-                    MetricBlock(
-                        "Giorni",
-                        weekEntries.map { it.timestamp.toLocalDate() }.distinct().size.toString(),
-                        Modifier.weight(1f)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text("Statistiche", style = MaterialTheme.typography.headlineSmall)
+                    Text(
+                        rangeLabel(range, start, today),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-            }
-
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                StatCard(title = "Parole", value = weekEntries.flatMap { it.secondaryEmotions }.distinct().size.toString(), modifier = Modifier.weight(1f))
-                StatCard(
-                    title = "Note",
-                    value = weekEntries.count { it.note.isNotBlank() }.toString(),
-                    modifier = Modifier.weight(1f)
+                Text(
+                    "${rangeEntries.size} momenti",
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(100.dp))
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
+                        .padding(horizontal = 12.dp, vertical = 7.dp),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             }
 
-            CalmCard(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Emozione prevalente", fontWeight = FontWeight.SemiBold)
-                    if (prevalent == null) {
-                        Text("Non ci sono ancora abbastanza momenti questa settimana.")
-                    } else {
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            EmotionArtwork(emotion = prevalent, size = 58.dp)
-                            Column {
-                                Text(prevalent.label, color = prevalent.color(), fontWeight = FontWeight.Bold)
-                                Text("${weekEntries.count { it.primaryEmotion.id == prevalent.id }} momenti")
-                            }
-                        }
-                    }
-                }
-            }
+            RangeSegmentedControl(selected = range, onSelect = { range = it })
 
-            CalmCard(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Andamento leggero", fontWeight = FontWeight.SemiBold)
-                    MoodTrend(entries = weekEntries)
-                    Text("Uno sguardo semplice, senza giudizi o punteggi.")
-                }
-            }
+            MetricGrid(
+                entriesCount = rangeEntries.size,
+                frequency = if (totalDays == 0) 0 else (activeDays * 100 / totalDays).coerceAtMost(100),
+                activeDays = activeDays,
+                words = words,
+                notes = notes,
+                averageMood = averageMood
+            )
 
-            CalmCard(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Parole ricorrenti", fontWeight = FontWeight.SemiBold)
-                    Text(if (mostUsedWords.isBlank()) "Ancora nessuna parola specifica." else mostUsedWords)
-                }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                EmotionDistributionCard(
+                    distribution = distribution,
+                    total = rangeEntries.size,
+                    modifier = Modifier.weight(1f)
+                )
+                MoodTrendCard(
+                    entries = rangeEntries,
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
     }
 }
 
 @Composable
-private fun RangePill(
-    label: String,
-    selected: Boolean,
-    modifier: Modifier = Modifier
+private fun RangeSegmentedControl(
+    selected: StatsRange,
+    onSelect: (StatsRange) -> Unit
 ) {
-    CalmCard(modifier = modifier) {
-        Text(
-            text = label,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 10.dp),
-            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-@Composable
-private fun MetricBlock(
-    title: String,
-    value: String,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier) {
-        Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Text(title, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-}
-
-@Composable
-private fun StatCard(
-    title: String,
-    value: String,
-    modifier: Modifier = Modifier
-) {
-    CalmCard(
-        modifier = modifier,
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(100.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Column(Modifier.padding(16.dp)) {
-            Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            Text(title)
+        StatsRange.entries.forEach { range ->
+            val isSelected = selected == range
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(100.dp))
+                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                    .clickable { onSelect(range) }
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    range.label,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MetricGrid(
+    entriesCount: Int,
+    frequency: Int,
+    activeDays: Int,
+    words: Int,
+    notes: Int,
+    averageMood: Double
+) {
+    CalmCard(modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                MetricTile("Momenti", entriesCount.toString(), Modifier.weight(1f))
+                MetricTile("Frequenza", "$frequency%", Modifier.weight(1f))
+                MetricTile("Giorni", activeDays.toString(), Modifier.weight(1f))
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                MetricTile("Parole", words.toString(), Modifier.weight(1f))
+                MetricTile("Note", notes.toString(), Modifier.weight(1f))
+                MetricTile("Media", if (averageMood == 0.0) "-" else "%.1f/5".format(averageMood), Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable
+private fun MetricTile(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f))
+            .padding(horizontal = 10.dp, vertical = 11.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        Text(value, style = MaterialTheme.typography.titleLarge)
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun EmotionDistributionCard(
+    distribution: List<Pair<MacroEmotion, Int>>,
+    total: Int,
+    modifier: Modifier = Modifier
+) {
+    CalmCard(modifier = modifier.height(226.dp)) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text("Distribuzione", style = MaterialTheme.typography.titleMedium)
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                DonutChart(distribution = distribution, total = total)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(total.toString(), style = MaterialTheme.typography.titleLarge)
+                    Text("check-in", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            distribution.take(3).forEach { (emotion, count) ->
+                LegendLine(emotion = emotion, percent = if (total == 0) 0 else count * 100 / total)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DonutChart(
+    distribution: List<Pair<MacroEmotion, Int>>,
+    total: Int
+) {
+    val fallback = MaterialTheme.colorScheme.outlineVariant
+    Canvas(modifier = Modifier.height(86.dp).fillMaxWidth()) {
+        val stroke = Stroke(width = 18.dp.toPx(), cap = StrokeCap.Round)
+        val radius = 31.dp.toPx()
+        val topLeft = Offset(size.width / 2f - radius, size.height / 2f - radius)
+        val chartSize = androidx.compose.ui.geometry.Size(radius * 2f, radius * 2f)
+        if (distribution.isEmpty() || total == 0) {
+            drawArc(fallback, -90f, 360f, false, topLeft, chartSize, style = stroke)
+        } else {
+            var start = -90f
+            distribution.forEach { (emotion, count) ->
+                val sweep = 360f * count / total
+                drawArc(emotion.color(), start, sweep, false, topLeft, chartSize, style = stroke)
+                start += sweep
+            }
+        }
+    }
+}
+
+@Composable
+private fun LegendLine(emotion: MacroEmotion, percent: Int) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(100.dp))
+                .background(emotion.color())
+                .height(8.dp)
+                .weight(0.25f)
+        )
+        Text(emotion.label, modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelSmall)
+        Text("$percent%", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun MoodTrendCard(
+    entries: List<MoodEntry>,
+    modifier: Modifier = Modifier
+) {
+    CalmCard(modifier = modifier.height(226.dp)) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text("Andamento", style = MaterialTheme.typography.titleMedium)
+            MoodTrend(entries = entries)
+            Text(
+                "Semplice media dei check-in nel periodo.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
 
 @Composable
 private fun MoodTrend(entries: List<MoodEntry>) {
-    val points = entries
-        .sortedBy { it.timestamp }
-        .takeLast(8)
-        .map { it.moodLevel.value }
+    val points = entries.sortedBy { it.timestamp }.takeLast(9).map { it.moodLevel.value }
     val chartBackground = MaterialTheme.colorScheme.surfaceVariant
     val lineColor = MaterialTheme.colorScheme.primary
 
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
-            .background(chartBackground, RoundedCornerShape(8.dp))
-            .padding(8.dp)
+            .height(126.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(chartBackground)
+            .padding(12.dp)
     ) {
         if (points.size < 2) return@Canvas
         val step = size.width / (points.size - 1)
@@ -203,15 +312,28 @@ private fun MoodTrend(entries: List<MoodEntry>) {
             )
         }
         mapped.zipWithNext().forEach { (start, end) ->
-            drawLine(
-                color = lineColor,
-                start = start,
-                end = end,
-                strokeWidth = 5f
-            )
+            drawLine(lineColor, start, end, strokeWidth = 4.dp.toPx(), cap = StrokeCap.Round)
         }
         mapped.forEach {
-            drawCircle(lineColor, radius = 6f, center = it)
+            drawCircle(lineColor, radius = 4.dp.toPx(), center = it)
         }
+    }
+}
+
+private fun emotionDistribution(entries: List<MoodEntry>): List<Pair<MacroEmotion, Int>> =
+    entries
+        .groupingBy { it.primaryEmotion.id }
+        .eachCount()
+        .entries
+        .sortedByDescending { it.value }
+        .map { (id, count) -> EmotionCatalog.byId(id) to count }
+
+private fun rangeLabel(range: StatsRange, start: LocalDate, today: LocalDate): String {
+    val formatter = DateTimeFormatter.ofPattern("d MMM", Locale.ITALIAN)
+    return when (range) {
+        StatsRange.Week -> "${start.format(formatter)} - ${today.format(formatter)}"
+        StatsRange.Month -> today.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ITALIAN))
+            .replaceFirstChar { it.titlecase(Locale.ITALIAN) }
+        StatsRange.Year -> today.year.toString()
     }
 }

@@ -47,19 +47,19 @@ private data class OnboardingPage(
 
 private val onboardingPages = listOf(
     OnboardingPage(
-        title = "Un check-in gentile",
-        body = "In meno di 30 secondi puoi segnare come stai, senza giudizio e senza obiettivi da inseguire.",
-        imageRes = R.drawable.onboarding_privacy
-    ),
-    OnboardingPage(
-        title = "Le parole aiutano",
-        body = "Parti da una categoria grande, poi scegli parole piu precise solo se ti va.",
+        title = "Traccia il tuo umore con gentilezza",
+        body = "Un piccolo spazio per ascoltarti ogni giorno, senza pressione e senza giudizio.",
         imageRes = R.drawable.onboarding_wheel
     ),
     OnboardingPage(
-        title = "Solo sul tuo telefono",
-        body = "Nessun account. Nessuna sincronizzazione. Puoi esportare tutto in JSON quando vuoi.",
-        imageRes = R.drawable.export_json
+        title = "La tua privacy, sempre al sicuro",
+        body = "I dati restano solo sul telefono. Nessun account, nessun cloud, nessuna sincronizzazione.",
+        imageRes = R.drawable.onboarding_privacy
+    ),
+    OnboardingPage(
+        title = "Osserva, comprendi, migliora",
+        body = "Calendario e statistiche ti aiutano a riconoscere pattern emotivi nel tempo.",
+        imageRes = R.drawable.stats_insight
     )
 )
 

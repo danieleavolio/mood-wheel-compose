@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.moodwheel.R
 import com.example.moodwheel.domain.model.EmotionCatalog
@@ -62,7 +63,9 @@ fun DiaryScreen(
         val matchesQuery = normalizedQuery.isBlank() || searchable.contains(normalizedQuery)
         matchesEmotion && matchesQuery
     }
-    val grouped = filteredEntries.groupBy { it.timestamp.toLocalDate() }
+    val visibleEntries = filteredEntries.take(24)
+    val hiddenCount = (filteredEntries.size - visibleEntries.size).coerceAtLeast(0)
+    val grouped = visibleEntries.groupBy { it.timestamp.toLocalDate() }
 
     CalmBackground(modifier = modifier.fillMaxSize()) {
         LazyColumn(
@@ -144,6 +147,19 @@ fun DiaryScreen(
                         DiaryEntryRow(entry = entry, onClick = { onEntryClick(entry) })
                     }
                 }
+                if (hiddenCount > 0) {
+                    item {
+                        CalmCard(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                "Altri $hiddenCount momenti disponibili. Usa ricerca o filtro per restringere la vista.",
+                                modifier = Modifier.padding(14.dp),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -189,9 +205,18 @@ fun DiaryEntryRow(
             EmotionArtwork(emotion = entry.primaryEmotion, size = 54.dp)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(entry.primaryEmotion.label, fontWeight = FontWeight.Bold)
-                Text(entry.secondaryEmotions.take(3).joinToString(", ").ifBlank { "Solo categoria" })
+                Text(
+                    entry.secondaryEmotions.take(3).joinToString(", ").ifBlank { "Solo categoria" },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
                 if (entry.note.isNotBlank()) {
-                    Text(entry.note, maxLines = 1, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        entry.note,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
             Text(entry.timestamp.formatTime(), style = MaterialTheme.typography.labelMedium)

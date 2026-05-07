@@ -12,9 +12,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -28,17 +28,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.moodwheel.R
-import com.example.moodwheel.ui.components.AppIllustration
 import com.example.moodwheel.ui.components.CalmBackground
 import com.example.moodwheel.ui.components.CalmCard
-import com.example.moodwheel.ui.components.EmotionArtwork
 import com.example.moodwheel.ui.components.GradientButton
 import com.example.moodwheel.ui.components.ProfileAvatar
 import com.example.moodwheel.ui.components.SecondaryButton
@@ -105,11 +101,10 @@ fun ExportScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp)
+                .padding(horizontal = 18.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text("Profilo e dati", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text("Profilo e dati", style = MaterialTheme.typography.headlineSmall)
 
             ProfileCard(
                 profileName = profileName,
@@ -120,33 +115,14 @@ fun ExportScreen(
                 onDarkThemeChange = onDarkThemeChange
             )
 
-            DataHero(entriesCount = entries.size)
+            PrivacyCard()
 
-            GradientButton(
-                text = "Esporta in JSON",
-                onClick = { exportLauncher.launch("mood-wheel-export.json") },
-                modifier = Modifier.fillMaxWidth()
+            BackupCard(
+                entriesCount = entries.size,
+                message = message,
+                onExport = { exportLauncher.launch("mood-wheel-export.json") },
+                onImport = { importLauncher.launch(arrayOf("application/json", "text/*", "*/*")) }
             )
-
-            SecondaryButton(
-                text = "Importa da JSON",
-                onClick = { importLauncher.launch(arrayOf("application/json", "text/*", "*/*")) },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            CalmCard(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    EmotionArtwork(emotion = null, size = 54.dp)
-                    Text(
-                        text = "$message Nessuna sincronizzazione. Nessun account.",
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
         }
     }
 }
@@ -162,22 +138,19 @@ private fun ProfileCard(
 ) {
     CalmCard(modifier = Modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(modifier = Modifier.clickable(onClick = onAvatarClick)) {
-                    ProfileAvatar(name = profileName, avatarPath = avatarPath, size = 72.dp)
+                    ProfileAvatar(name = profileName, avatarPath = avatarPath, size = 58.dp)
                 }
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("Il tuo spazio", fontWeight = FontWeight.SemiBold)
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                    Text(profileName.ifBlank { "Il tuo spazio" }, style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "Nome e avatar restano locali.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodySmall
+                        "Identita locale, solo sul telefono.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -205,69 +178,78 @@ private fun ProfileCard(
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text("Tema scuro", fontWeight = FontWeight.SemiBold)
                     Text(
-                        "Attivalo manualmente quando vuoi.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodySmall
+                        "Controllo manuale, sempre disponibile.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Switch(
-                    checked = darkTheme,
-                    onCheckedChange = onDarkThemeChange
+                Switch(checked = darkTheme, onCheckedChange = onDarkThemeChange)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PrivacyCard() {
+    CalmCard(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            SoftBadge("S")
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("Privacy e sicurezza", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    "Nessun account, nessun cloud, nessuna sincronizzazione. I dati restano sul telefono.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-
-            Text(
-                "Tocca l'avatar per scegliere una foto.",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall
-            )
         }
     }
 }
 
 @Composable
-private fun DataHero(entriesCount: Int) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(30.dp))
-            .background(
-                Brush.linearGradient(
-                    listOf(
-                        MaterialTheme.colorScheme.primaryContainer,
-                        MaterialTheme.colorScheme.secondaryContainer,
-                        MaterialTheme.colorScheme.surface
-                    )
-                )
-            )
-    ) {
+private fun BackupCard(
+    entriesCount: Int,
+    message: String,
+    onExport: () -> Unit,
+    onImport: () -> Unit
+) {
+    CalmCard(modifier = Modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            AppIllustration(resId = R.drawable.export_json)
-            Text("Backup locale", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text(
-                "Esporta o ricarica i tuoi momenti quando cambi telefono o vuoi tenere una copia.",
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            PrivacyBadge("$entriesCount momenti pronti")
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                SoftBadge("B")
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("Backup locale", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "$entriesCount momenti pronti. $message",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+            GradientButton(text = "Esporta in JSON", onClick = onExport, modifier = Modifier.fillMaxWidth())
+            SecondaryButton(text = "Importa da JSON", onClick = onImport, modifier = Modifier.fillMaxWidth())
         }
     }
 }
 
 @Composable
-private fun PrivacyBadge(text: String) {
+private fun SoftBadge(label: String) {
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(100.dp))
-            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.86f))
-            .padding(horizontal = 16.dp, vertical = 9.dp)
+            .size(46.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center
     ) {
-        Text(text, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+        Text(label, color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.SemiBold)
     }
 }

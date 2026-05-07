@@ -1,7 +1,6 @@
 package com.example.moodwheel.ui.screens
 
 import android.app.DatePickerDialog
-import android.app.TimePickerDialog
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
@@ -10,19 +9,21 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -30,6 +31,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,11 +47,11 @@ import com.example.moodwheel.domain.model.MoodLevel
 import com.example.moodwheel.ui.components.CalmBackground
 import com.example.moodwheel.ui.components.CalmCard
 import com.example.moodwheel.ui.components.EmotionArtwork
-import com.example.moodwheel.ui.components.EmotionChips
 import com.example.moodwheel.ui.components.EmotionWheel
 import com.example.moodwheel.ui.components.GradientButton
 import com.example.moodwheel.ui.components.MoodListSelector
 import com.example.moodwheel.ui.components.SecondaryButton
+import com.example.moodwheel.ui.components.SoftTimePickerSheet
 import com.example.moodwheel.ui.components.StepProgress
 import com.example.moodwheel.ui.theme.color
 import com.example.moodwheel.ui.theme.softColor
@@ -61,7 +65,6 @@ fun AddMoodScreen(
     onSaved: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val scroll = rememberScrollState()
 
     BackHandler {
         if (state.step > 1) {
@@ -75,9 +78,8 @@ fun AddMoodScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(scroll)
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .padding(horizontal = 20.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -97,6 +99,7 @@ fun AddMoodScreen(
 
             AnimatedContent(
                 targetState = state.step,
+                modifier = Modifier.weight(1f),
                 transitionSpec = { fadeIn() togetherWith fadeOut() },
                 label = "addMoodStep"
             ) { step ->
@@ -108,7 +111,6 @@ fun AddMoodScreen(
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -158,6 +160,7 @@ private fun MoodStep(
 }
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 private fun EmotionStep(
     state: AddMoodUiState,
     viewModel: AddMoodViewModel
@@ -204,11 +207,25 @@ private fun EmotionStep(
                             Text("Scegli le emozioni che senti.")
                         }
                     }
-                    EmotionChips(
-                        emotion = selected,
-                        selected = state.selectedMicro,
-                        onToggle = viewModel::toggleMicro
-                    )
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        selected.microEmotions.take(10).forEach { label ->
+                            val isSelected = label in state.selectedMicro
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = { viewModel.toggleMicro(label) },
+                                label = { Text(label, style = MaterialTheme.typography.labelMedium) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = selected.color(),
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f)
+                                )
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -221,10 +238,11 @@ private fun DateTimeStep(
     viewModel: AddMoodViewModel
 ) {
     val context = LocalContext.current
+    var showTimeSheet by remember { mutableStateOf(false) }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(22.dp)
+        verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
         Text("Quando e successo?", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text("Puoi lasciare l'ora attuale o cambiarla.", textAlign = TextAlign.Center)
@@ -259,27 +277,22 @@ private fun DateTimeStep(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TimeTile(value = "%02d".format(state.time.hour)) {
-                TimePickerDialog(
-                    context,
-                    { _, hour, minute -> viewModel.updateTime(LocalTime.of(hour, minute)) },
-                    state.time.hour,
-                    state.time.minute,
-                    true
-                ).show()
-            }
+            TimeTile(value = "%02d".format(state.time.hour), onClick = { showTimeSheet = true })
             Text(":", modifier = Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.headlineLarge)
-            TimeTile(value = "%02d".format(state.time.minute)) {
-                TimePickerDialog(
-                    context,
-                    { _, hour, minute -> viewModel.updateTime(LocalTime.of(hour, minute)) },
-                    state.time.hour,
-                    state.time.minute,
-                    true
-                ).show()
-            }
+            TimeTile(value = "%02d".format(state.time.minute), onClick = { showTimeSheet = true })
         }
         Text("Tocca l'ora se vuoi cambiarla.", style = MaterialTheme.typography.bodySmall)
+    }
+
+    if (showTimeSheet) {
+        SoftTimePickerSheet(
+            initialTime = state.time,
+            onDismiss = { showTimeSheet = false },
+            onConfirm = { time ->
+                viewModel.updateTime(time)
+                showTimeSheet = false
+            }
+        )
     }
 }
 

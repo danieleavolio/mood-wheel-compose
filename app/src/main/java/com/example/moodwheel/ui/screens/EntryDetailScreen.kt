@@ -1,7 +1,6 @@
 package com.example.moodwheel.ui.screens
 
 import android.app.DatePickerDialog
-import android.app.TimePickerDialog
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -45,6 +44,7 @@ import com.example.moodwheel.ui.components.EmotionChips
 import com.example.moodwheel.ui.components.EmotionWheel
 import com.example.moodwheel.ui.components.GradientButton
 import com.example.moodwheel.ui.components.MoodSelector
+import com.example.moodwheel.ui.components.SoftTimePickerSheet
 import com.example.moodwheel.ui.theme.softColor
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -67,6 +67,7 @@ fun EntryDetailScreen(
     var time by remember(entry.id) { mutableStateOf(entry.timestamp.toLocalTime()) }
     var note by remember(entry.id) { mutableStateOf(entry.note) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showTimeSheet by remember { mutableStateOf(false) }
 
     fun selectMacro(emotion: MacroEmotion) {
         selectedMacro = emotion
@@ -175,15 +176,7 @@ fun EntryDetailScreen(
                     )
                     DetailPill(
                         label = "%02d:%02d".format(time.hour, time.minute),
-                        onClick = {
-                            TimePickerDialog(
-                                context,
-                                { _, hour, minute -> time = LocalTime.of(hour, minute) },
-                                time.hour,
-                                time.minute,
-                                true
-                            ).show()
-                        }
+                        onClick = { showTimeSheet = true }
                     )
                 }
             }
@@ -253,6 +246,17 @@ fun EntryDetailScreen(
                 TextButton(onClick = { showDeleteDialog = false }) {
                     Text("Annulla")
                 }
+            }
+        )
+    }
+
+    if (showTimeSheet) {
+        SoftTimePickerSheet(
+            initialTime = time,
+            onDismiss = { showTimeSheet = false },
+            onConfirm = { selected ->
+                time = selected
+                showTimeSheet = false
             }
         )
     }
