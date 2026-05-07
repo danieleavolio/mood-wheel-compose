@@ -77,7 +77,7 @@ class ScreenshotCaptureTest {
             .putString("theme_mode", if (darkTheme) "dark" else "light")
             .commit()
 
-        device.executeShellCommand("am force-stop $packageName")
+        device.pressHome()
         val intent = context.packageManager.getLaunchIntentForPackage(packageName)
             ?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
             ?: error("No launcher intent for $packageName")
