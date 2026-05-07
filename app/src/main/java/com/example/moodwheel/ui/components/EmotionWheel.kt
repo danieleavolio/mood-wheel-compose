@@ -35,8 +35,9 @@ fun EmotionWheel(
     val emotions = EmotionCatalog.emotions
     val textColor = MaterialTheme.colorScheme.onSurface
     val centerTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-    val centerOuterColor = MaterialTheme.colorScheme.surface
-    val centerInnerColor = MaterialTheme.colorScheme.surfaceVariant
+    val centerOuterColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.72f)
+    val centerInnerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
+    val glyphHaloColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.32f)
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -80,7 +81,13 @@ fun EmotionWheel(
                     x = center.x + cos(angle).toFloat() * radius * 0.39f,
                     y = center.y + sin(angle).toFloat() * radius * 0.39f
                 )
-                drawEmotionGlyph(emotion.id, iconCenter, radius * 0.11f, Color(0xFF2D2A35).copy(alpha = 0.62f))
+                drawEmotionGlyph(
+                    id = emotion.id,
+                    center = iconCenter,
+                    radius = radius * 0.11f,
+                    color = Color(0xFF2D2A35).copy(alpha = 0.62f),
+                    haloColor = glyphHaloColor
+                )
             }
 
             drawCircle(centerOuterColor, innerRadius, center)
@@ -128,9 +135,10 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawEmotionGlyph(
     id: String,
     center: Offset,
     radius: Float,
-    color: Color
+    color: Color,
+    haloColor: Color
 ) {
-    drawCircle(Color.White.copy(alpha = 0.26f), radius * 1.45f, center)
+    drawCircle(haloColor, radius * 1.45f, center)
     drawCircle(color, radius * 0.15f, Offset(center.x - radius * 0.42f, center.y - radius * 0.12f))
     drawCircle(color, radius * 0.15f, Offset(center.x + radius * 0.42f, center.y - radius * 0.12f))
     when (id) {

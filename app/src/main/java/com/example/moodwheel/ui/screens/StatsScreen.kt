@@ -12,7 +12,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -125,37 +129,41 @@ fun StatsScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RangeSegmentedControl(
     selected: StatsRange,
     onSelect: (StatsRange) -> Unit
 ) {
-    Row(
+    SingleChoiceSegmentedButtonRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(100.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.34f))
+            .padding(4.dp)
     ) {
-        StatsRange.entries.forEach { range ->
+        StatsRange.entries.forEachIndexed { index, range ->
             val isSelected = selected == range
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(100.dp))
-                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
-                    .clickable { onSelect(range) }
-                    .padding(vertical = 10.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    range.label,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+            SegmentedButton(
+                selected = isSelected,
+                onClick = { onSelect(range) },
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = StatsRange.entries.size),
+                label = {
+                    Text(
+                        range.label,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                },
+                colors = SegmentedButtonDefaults.colors(
+                    activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                    activeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    inactiveContainerColor = Color.Transparent,
+                    inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    activeBorderColor = Color.Transparent,
+                    inactiveBorderColor = Color.Transparent
                 )
-            }
+            )
         }
     }
 }
@@ -194,7 +202,7 @@ private fun MetricTile(
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(18.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f))
+            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.24f))
             .padding(horizontal = 10.dp, vertical = 11.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
@@ -292,7 +300,7 @@ private fun MoodTrendCard(
 @Composable
 private fun MoodTrend(entries: List<MoodEntry>) {
     val points = entries.sortedBy { it.timestamp }.takeLast(9).map { it.moodLevel.value }
-    val chartBackground = MaterialTheme.colorScheme.surfaceVariant
+    val chartBackground = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.16f)
     val lineColor = MaterialTheme.colorScheme.primary
 
     Canvas(
