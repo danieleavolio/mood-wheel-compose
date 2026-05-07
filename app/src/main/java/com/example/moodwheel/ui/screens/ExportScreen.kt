@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -50,6 +50,8 @@ fun ExportScreen(
     avatarPath: String?,
     onNameChange: (String) -> Unit,
     onAvatarChange: (String) -> Unit,
+    darkTheme: Boolean,
+    onDarkThemeChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -113,7 +115,9 @@ fun ExportScreen(
                 profileName = profileName,
                 avatarPath = avatarPath,
                 onNameChange = onNameChange,
-                onAvatarClick = { avatarLauncher.launch("image/*") }
+                onAvatarClick = { avatarLauncher.launch("image/*") },
+                darkTheme = darkTheme,
+                onDarkThemeChange = onDarkThemeChange
             )
 
             DataHero(entriesCount = entries.size)
@@ -152,7 +156,9 @@ private fun ProfileCard(
     profileName: String,
     avatarPath: String?,
     onNameChange: (String) -> Unit,
-    onAvatarClick: () -> Unit
+    onAvatarClick: () -> Unit,
+    darkTheme: Boolean,
+    onDarkThemeChange: (Boolean) -> Unit
 ) {
     CalmCard(modifier = Modifier.fillMaxWidth()) {
         Column(
@@ -184,12 +190,31 @@ private fun ProfileCard(
                 placeholder = { Text("Come vuoi essere salutato?") },
                 shape = RoundedCornerShape(18.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedContainerColor = Color(0xFFF8F4FF),
-                    unfocusedContainerColor = Color(0xFFF8F4FF)
+                    focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text("Tema scuro", fontWeight = FontWeight.SemiBold)
+                    Text(
+                        "Attivalo manualmente quando vuoi.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                Switch(
+                    checked = darkTheme,
+                    onCheckedChange = onDarkThemeChange
+                )
+            }
 
             Text(
                 "Tocca l'avatar per scegliere una foto.",
@@ -208,7 +233,11 @@ private fun DataHero(entriesCount: Int) {
             .clip(RoundedCornerShape(30.dp))
             .background(
                 Brush.linearGradient(
-                    listOf(Color(0xFFECE7FF), Color(0xFFFFF3DF), Color(0xFFF7FBFF))
+                    listOf(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        MaterialTheme.colorScheme.secondaryContainer,
+                        MaterialTheme.colorScheme.surface
+                    )
                 )
             )
     ) {
@@ -236,7 +265,7 @@ private fun PrivacyBadge(text: String) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(100.dp))
-            .background(Color.White.copy(alpha = 0.76f))
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.86f))
             .padding(horizontal = 16.dp, vertical = 9.dp)
     ) {
         Text(text, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)

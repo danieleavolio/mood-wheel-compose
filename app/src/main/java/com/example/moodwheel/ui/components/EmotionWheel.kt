@@ -35,6 +35,8 @@ fun EmotionWheel(
     val emotions = EmotionCatalog.emotions
     val textColor = MaterialTheme.colorScheme.onSurface
     val centerTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val centerOuterColor = MaterialTheme.colorScheme.surface
+    val centerInnerColor = MaterialTheme.colorScheme.surfaceVariant
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -81,8 +83,8 @@ fun EmotionWheel(
                 drawEmotionGlyph(emotion.id, iconCenter, radius * 0.11f, Color(0xFF2D2A35).copy(alpha = 0.62f))
             }
 
-            drawCircle(Color.White, innerRadius, center)
-            drawCircle(Color(0xFFF2EFF8), innerRadius * 0.98f, center)
+            drawCircle(centerOuterColor, innerRadius, center)
+            drawCircle(centerInnerColor, innerRadius * 0.98f, center)
 
             val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 color = android.graphics.Color.rgb(

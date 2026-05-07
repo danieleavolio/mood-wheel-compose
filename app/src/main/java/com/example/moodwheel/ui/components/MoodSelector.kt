@@ -99,7 +99,7 @@ private fun MoodListChoice(
                     .background(MaterialTheme.colorScheme.primary, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Text("OK", color = Color.White, style = MaterialTheme.typography.labelSmall)
+                Text("OK", color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.labelSmall)
             }
         }
     }

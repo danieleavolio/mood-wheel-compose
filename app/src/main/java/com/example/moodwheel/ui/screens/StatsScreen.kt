@@ -184,12 +184,14 @@ private fun MoodTrend(entries: List<MoodEntry>) {
         .sortedBy { it.timestamp }
         .takeLast(8)
         .map { it.moodLevel.value }
+    val chartBackground = MaterialTheme.colorScheme.surfaceVariant
+    val lineColor = MaterialTheme.colorScheme.primary
 
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
             .height(120.dp)
-            .background(Color.White, RoundedCornerShape(8.dp))
+            .background(chartBackground, RoundedCornerShape(8.dp))
             .padding(8.dp)
     ) {
         if (points.size < 2) return@Canvas
@@ -202,14 +204,14 @@ private fun MoodTrend(entries: List<MoodEntry>) {
         }
         mapped.zipWithNext().forEach { (start, end) ->
             drawLine(
-                color = Color(0xFF5D4AE3),
+                color = lineColor,
                 start = start,
                 end = end,
                 strokeWidth = 5f
             )
         }
         mapped.forEach {
-            drawCircle(Color(0xFF5D4AE3), radius = 6f, center = it)
+            drawCircle(lineColor, radius = 6f, center = it)
         }
     }
 }

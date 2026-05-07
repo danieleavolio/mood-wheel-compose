@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -55,7 +56,6 @@ import com.example.moodwheel.ui.screens.HomeViewModel
 import com.example.moodwheel.ui.screens.HomeViewModelFactory
 import com.example.moodwheel.ui.screens.OnboardingScreen
 import com.example.moodwheel.ui.screens.StatsScreen
-import com.example.moodwheel.ui.theme.MoodColors
 import com.example.moodwheel.ui.theme.MoodWheelTheme
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.launch
@@ -68,13 +68,31 @@ class MainActivity : ComponentActivity() {
         val repository = (application as MoodWheelApplication).container.repository
         val prefs = getSharedPreferences("mood_wheel_prefs", MODE_PRIVATE)
         setContent {
-            MoodWheelTheme {
+            var themeMode by remember {
+                mutableStateOf(prefs.getString("theme_mode", "system") ?: "system")
+            }
+            val systemDark = isSystemInDarkTheme()
+            val darkTheme = when (themeMode) {
+                "dark" -> true
+                "light" -> false
+                else -> systemDark
+            }
+
+            MoodWheelTheme(darkTheme = darkTheme) {
                 var onboardingDone by remember {
                     mutableStateOf(prefs.getBoolean("onboarding_done", false))
                 }
 
                 if (onboardingDone) {
-                    MoodApp(repository = repository, prefs = prefs)
+                    MoodApp(
+                        repository = repository,
+                        prefs = prefs,
+                        darkTheme = darkTheme,
+                        onDarkThemeChange = { enabled ->
+                            themeMode = if (enabled) "dark" else "light"
+                            prefs.edit().putString("theme_mode", themeMode).apply()
+                        }
+                    )
                 } else {
                     OnboardingScreen(
                         onDone = {
@@ -111,7 +129,9 @@ private data class LocalProfile(
 @Composable
 private fun MoodApp(
     repository: MoodRepository,
-    prefs: SharedPreferences
+    prefs: SharedPreferences,
+    darkTheme: Boolean,
+    onDarkThemeChange: (Boolean) -> Unit
 ) {
     var mode by remember { mutableStateOf(AppMode.Main) }
     var addInitialDate by remember { mutableStateOf<LocalDate?>(null) }
@@ -212,7 +232,7 @@ private fun MoodApp(
     Scaffold(
         bottomBar = {
             NavigationBar(
-                containerColor = MoodColors.WarmSurface.copy(alpha = 0.96f),
+                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
                 tonalElevation = 2.dp,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -294,7 +314,9 @@ private fun MoodApp(
                         profileName = profile.name,
                         avatarPath = profile.avatarPath,
                         onNameChange = ::updateName,
-                        onAvatarChange = ::updateAvatar
+                        onAvatarChange = ::updateAvatar,
+                        darkTheme = darkTheme,
+                        onDarkThemeChange = onDarkThemeChange
                     )
                 }
             }

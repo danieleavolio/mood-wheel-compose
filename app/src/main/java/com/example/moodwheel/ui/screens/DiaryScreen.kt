@@ -94,8 +94,8 @@ fun DiaryScreen(
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = Color.Transparent,
                                 unfocusedBorderColor = Color.Transparent,
-                                focusedContainerColor = Color(0xFFF8F4FF),
-                                unfocusedContainerColor = Color(0xFFF8F4FF)
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                             )
                         )
                         FlowRow(
@@ -154,19 +154,20 @@ private fun FilterPill(
     label: String,
     selected: Boolean,
     modifier: Modifier = Modifier,
-    color: Color = Color(0xFF5D4AE3),
+    color: Color? = null,
     onClick: () -> Unit
 ) {
+    val chipColor = color ?: MaterialTheme.colorScheme.primary
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(100.dp))
-            .background(if (selected) color.copy(alpha = 0.92f) else Color(0xFFF1EDFF))
+            .background(if (selected) chipColor.copy(alpha = 0.92f) else MaterialTheme.colorScheme.primaryContainer)
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 9.dp)
     ) {
         Text(
             text = label,
-            color = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.labelMedium,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
         )

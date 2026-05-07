@@ -57,6 +57,11 @@ fun GradientButton(
     enabled: Boolean = true
 ) {
     val shape = RoundedCornerShape(100.dp)
+    val contentColor = if (enabled) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
     Box(
         modifier = modifier
             .height(56.dp)
@@ -83,7 +88,7 @@ fun GradientButton(
     ) {
         Text(
             text = text,
-            color = Color.White,
+            color = contentColor,
             fontWeight = FontWeight.SemiBold
         )
     }

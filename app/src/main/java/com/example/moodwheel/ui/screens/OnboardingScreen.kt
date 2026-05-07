@@ -98,7 +98,11 @@ fun OnboardingScreen(
                         .clip(RoundedCornerShape(32.dp))
                         .background(
                             Brush.linearGradient(
-                                listOf(Color(0xFFECE7FF), Color(0xFFFFF3DF), Color(0xFFF7FBFF))
+                                listOf(
+                                    MaterialTheme.colorScheme.primaryContainer,
+                                    MaterialTheme.colorScheme.secondaryContainer,
+                                    MaterialTheme.colorScheme.surface
+                                )
                             )
                         )
                 ) {
@@ -137,7 +141,7 @@ fun OnboardingScreen(
                             modifier = Modifier
                                 .size(if (index == page) 22.dp else 8.dp, 8.dp)
                                 .clip(CircleShape)
-                                .background(if (index == page) MaterialTheme.colorScheme.primary else Color(0xFFD8D4E5))
+                                .background(if (index == page) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
                         )
                     }
                 }

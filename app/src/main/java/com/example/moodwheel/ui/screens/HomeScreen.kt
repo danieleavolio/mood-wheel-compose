@@ -168,7 +168,7 @@ private fun HomeHeader(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.64f)),
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.72f)),
             contentAlignment = Alignment.Center
         ) {
             ProfileAvatar(

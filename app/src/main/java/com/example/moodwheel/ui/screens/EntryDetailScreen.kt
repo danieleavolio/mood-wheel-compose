@@ -105,7 +105,7 @@ fun EntryDetailScreen(
                     .clip(RoundedCornerShape(30.dp))
                     .background(
                         Brush.linearGradient(
-                            listOf(selectedMacro.softColor(), Color(0xFFFFFCF8))
+                            listOf(selectedMacro.softColor(), MaterialTheme.colorScheme.surface)
                         )
                     )
                     .padding(20.dp)
@@ -203,8 +203,8 @@ fun EntryDetailScreen(
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Transparent,
                             unfocusedBorderColor = Color.Transparent,
-                            focusedContainerColor = Color(0xFFF8F4FF),
-                            unfocusedContainerColor = Color(0xFFF8F4FF)
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                         )
                     )
                 }
@@ -268,7 +268,7 @@ private fun DetailPill(
             .fillMaxWidth()
             .height(52.dp)
             .clip(RoundedCornerShape(18.dp))
-            .background(Color(0xFFF1EDFF))
+            .background(MaterialTheme.colorScheme.primaryContainer)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {

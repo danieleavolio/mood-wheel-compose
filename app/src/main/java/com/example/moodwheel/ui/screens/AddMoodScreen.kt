@@ -246,7 +246,7 @@ private fun DateTimeStep(
                 .height(54.dp),
             shape = RoundedCornerShape(18.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFF1EDFF),
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.primary
             ),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
@@ -293,8 +293,8 @@ private fun TimeTile(
         shape = RoundedCornerShape(18.dp),
         modifier = Modifier.height(88.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFFFFCF8),
-            contentColor = Color(0xFF221B38)
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
         ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp, pressedElevation = 0.dp)
     ) {
@@ -341,8 +341,8 @@ private fun NoteStep(
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.Transparent,
                         unfocusedBorderColor = Color.Transparent,
-                        focusedContainerColor = Color(0xFFF8F4FF),
-                        unfocusedContainerColor = Color(0xFFF8F4FF)
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
                     supportingText = {
                         Text("${state.note.length}/300")

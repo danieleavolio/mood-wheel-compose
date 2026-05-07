@@ -158,9 +158,10 @@ private val AppShapes = Shapes(
 
 @Composable
 fun MoodWheelTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colors = if (isSystemInDarkTheme()) DarkColors else LightColors
+    val colors = if (darkTheme) DarkColors else LightColors
     MaterialTheme(
         colorScheme = colors,
         typography = AppTypography,
