@@ -225,7 +225,7 @@ private fun MoodApp(
     Scaffold(
         bottomBar = {
             NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.96f),
                 tonalElevation = 2.dp,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -244,7 +244,7 @@ private fun MoodApp(
                             selectedTextColor = MaterialTheme.colorScheme.primary,
                             unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                             unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            indicatorColor = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+                            indicatorColor = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.86f) else Color.Transparent
                         )
                     )
                 }

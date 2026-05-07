@@ -147,8 +147,8 @@ private fun MonthButton(
             .semantics { contentDescription = description },
         shape = CircleShape,
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.primary
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.58f),
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp, pressedElevation = 1.dp),
         contentPadding = PaddingValues(0.dp)

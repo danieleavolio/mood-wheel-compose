@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -139,7 +140,7 @@ private fun RangeSegmentedControl(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(100.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.34f))
+            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.42f))
             .padding(4.dp)
     ) {
         StatsRange.entries.forEachIndexed { index, range ->
@@ -202,7 +203,7 @@ private fun MetricTile(
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(18.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.24f))
+            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.36f))
             .padding(horizontal = 10.dp, vertical = 11.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
@@ -300,7 +301,6 @@ private fun MoodTrendCard(
 @Composable
 private fun MoodTrend(entries: List<MoodEntry>) {
     val points = entries.sortedBy { it.timestamp }.takeLast(9).map { it.moodLevel.value }
-    val chartBackground = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.16f)
     val lineColor = MaterialTheme.colorScheme.primary
 
     Canvas(
@@ -308,7 +308,14 @@ private fun MoodTrend(entries: List<MoodEntry>) {
             .fillMaxWidth()
             .height(126.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(chartBackground)
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.36f),
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.20f)
+                    )
+                )
+            )
             .padding(12.dp)
     ) {
         if (points.size < 2) return@Canvas

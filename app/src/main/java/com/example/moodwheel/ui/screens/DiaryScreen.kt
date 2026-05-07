@@ -97,8 +97,8 @@ fun DiaryScreen(
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = Color.Transparent,
                                 unfocusedBorderColor = Color.Transparent,
-                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.48f),
+                                unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.38f)
                             )
                         )
                         FlowRow(
@@ -177,7 +177,7 @@ private fun FilterPill(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(100.dp))
-            .background(if (selected) chipColor.copy(alpha = 0.92f) else MaterialTheme.colorScheme.primaryContainer)
+            .background(if (selected) chipColor.copy(alpha = 0.78f) else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.54f))
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 9.dp)
     ) {

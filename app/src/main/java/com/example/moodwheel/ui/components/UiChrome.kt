@@ -39,13 +39,28 @@ fun CalmCard(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
+    val cardBrush = Brush.linearGradient(
+        listOf(
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.96f),
+            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.46f),
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.24f)
+        )
+    )
     Card(
         modifier = modifier,
         shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.82f)),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.42f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.36f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        content = { content() }
+        content = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(cardBrush)
+            ) {
+                content()
+            }
+        }
     )
 }
 
@@ -106,7 +121,7 @@ fun SecondaryButton(
         shape = RoundedCornerShape(100.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.primary
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp, pressedElevation = 0.dp)
     ) {

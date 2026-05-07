@@ -221,7 +221,8 @@ private fun EmotionStep(
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = selected.color(),
                                     selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f)
+                                    containerColor = selected.color().copy(alpha = 0.16f),
+                                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             )
                         }
@@ -265,7 +266,7 @@ private fun DateTimeStep(
             shape = RoundedCornerShape(18.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.primary
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             ),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
         ) {
@@ -306,7 +307,7 @@ private fun TimeTile(
         shape = RoundedCornerShape(18.dp),
         modifier = Modifier.height(88.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.46f),
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp, pressedElevation = 0.dp)
@@ -354,8 +355,8 @@ private fun NoteStep(
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.Transparent,
                         unfocusedBorderColor = Color.Transparent,
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                        focusedContainerColor = macro.softColor(),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.38f)
                     ),
                     supportingText = {
                         Text("${state.note.length}/300")

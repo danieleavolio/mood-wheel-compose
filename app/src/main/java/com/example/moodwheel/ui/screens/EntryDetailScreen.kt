@@ -106,7 +106,11 @@ fun EntryDetailScreen(
                     .clip(RoundedCornerShape(30.dp))
                     .background(
                         Brush.linearGradient(
-                            listOf(selectedMacro.softColor(), MaterialTheme.colorScheme.surface)
+                            listOf(
+                                selectedMacro.softColor(),
+                                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.44f),
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
+                            )
                         )
                     )
                     .padding(20.dp)
@@ -196,8 +200,8 @@ fun EntryDetailScreen(
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Transparent,
                             unfocusedBorderColor = Color.Transparent,
-                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                            focusedContainerColor = selectedMacro.softColor(),
+                            unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.38f)
                         )
                     )
                 }

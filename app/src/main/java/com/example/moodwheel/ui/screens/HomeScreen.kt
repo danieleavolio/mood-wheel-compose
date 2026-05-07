@@ -140,7 +140,8 @@ private fun HomeHeader(
                     listOf(
                         MaterialTheme.colorScheme.surface,
                         MaterialTheme.colorScheme.primaryContainer,
-                        MaterialTheme.colorScheme.tertiaryContainer
+                        MaterialTheme.colorScheme.tertiaryContainer,
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.62f)
                     )
                 )
             )
@@ -168,7 +169,7 @@ private fun HomeHeader(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.72f)),
+                .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.64f)),
             contentAlignment = Alignment.Center
         ) {
             ProfileAvatar(

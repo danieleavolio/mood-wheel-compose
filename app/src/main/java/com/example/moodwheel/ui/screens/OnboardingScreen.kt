@@ -101,7 +101,8 @@ fun OnboardingScreen(
                                 listOf(
                                     MaterialTheme.colorScheme.primaryContainer,
                                     MaterialTheme.colorScheme.secondaryContainer,
-                                    MaterialTheme.colorScheme.surface
+                                    MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.72f),
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.62f)
                                 )
                             )
                         )
