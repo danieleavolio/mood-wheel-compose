@@ -1,5 +1,6 @@
 package com.example.moodwheel.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,6 +32,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.moodwheel.ui.theme.MoodColors
 
 @Composable
 fun CalmCard(
@@ -39,9 +41,10 @@ fun CalmCard(
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFCF8).copy(alpha = 0.92f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.74f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         content = { content() }
     )
 }
@@ -60,12 +63,17 @@ fun GradientButton(
             .clip(shape)
             .background(
                 if (enabled) {
-                    Brush.horizontalGradient(listOf(Color(0xFF6A54F5), Color(0xFF4B35D1)))
+                    Brush.horizontalGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.tertiary
+                        )
+                    )
                 } else {
                     Brush.horizontalGradient(
                         listOf(
-                            MaterialTheme.colorScheme.outline.copy(alpha = 0.18f),
-                            MaterialTheme.colorScheme.outline.copy(alpha = 0.18f)
+                            MaterialTheme.colorScheme.outline.copy(alpha = 0.16f),
+                            MaterialTheme.colorScheme.outline.copy(alpha = 0.16f)
                         )
                     )
                 }
@@ -92,7 +100,7 @@ fun SecondaryButton(
         modifier = modifier.height(56.dp),
         shape = RoundedCornerShape(100.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFF1EDFF),
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.primary
         ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp, pressedElevation = 0.dp)
@@ -106,8 +114,8 @@ fun StepProgress(
     currentStep: Int,
     totalSteps: Int,
     modifier: Modifier = Modifier,
-    activeColor: Color = Color(0xFF5D4AE3),
-    inactiveColor: Color = Color(0xFFE9E6F6),
+    activeColor: Color = MoodColors.Lavender,
+    inactiveColor: Color = MoodColors.LavenderSoft,
     segmentWidth: Dp = 42.dp
 ) {
     Row(

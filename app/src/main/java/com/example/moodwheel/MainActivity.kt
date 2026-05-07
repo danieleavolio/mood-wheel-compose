@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -54,6 +55,7 @@ import com.example.moodwheel.ui.screens.HomeViewModel
 import com.example.moodwheel.ui.screens.HomeViewModelFactory
 import com.example.moodwheel.ui.screens.OnboardingScreen
 import com.example.moodwheel.ui.screens.StatsScreen
+import com.example.moodwheel.ui.theme.MoodColors
 import com.example.moodwheel.ui.theme.MoodWheelTheme
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.launch
@@ -210,12 +212,12 @@ private fun MoodApp(
     Scaffold(
         bottomBar = {
             NavigationBar(
-                containerColor = Color.Transparent,
-                tonalElevation = 0.dp,
+                containerColor = MoodColors.WarmSurface.copy(alpha = 0.96f),
+                tonalElevation = 2.dp,
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.Transparent)
-                    .padding(horizontal = 14.dp, vertical = 10.dp)
+                    .padding(horizontal = 10.dp, vertical = 8.dp)
             ) {
                 tabs.forEachIndexed { index, item ->
                     val selected = pagerState.currentPage == index
@@ -227,13 +229,13 @@ private fun MoodApp(
                             }
                         },
                         icon = { NavGlyph(tabIcon(item), selected = selected) },
-                        label = null,
+                        label = { Text(tabLabel(item)) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color(0xFF5D4AE3),
-                            selectedTextColor = Color(0xFF5D4AE3),
-                            unselectedIconColor = Color(0xFF827A95),
-                            unselectedTextColor = Color(0xFF827A95),
-                            indicatorColor = if (selected) Color(0xFFECE7FF) else Color.Transparent
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            indicatorColor = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
                         )
                     )
                 }
@@ -305,8 +307,8 @@ private fun tabLabel(tab: Tab): String =
         Tab.Home -> "Home"
         Tab.Calendar -> "Calendario"
         Tab.Stats -> "Statistiche"
-        Tab.Diary -> "Diario"
-        Tab.Export -> "Altro"
+        Tab.Diary -> "Momenti"
+        Tab.Export -> "Profilo"
     }
 
 private fun tabIcon(tab: Tab): String =

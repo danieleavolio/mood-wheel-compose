@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.moodwheel.domain.model.MacroEmotion
 import com.example.moodwheel.domain.model.MoodLevel
+import com.example.moodwheel.ui.theme.MoodColors
 import com.example.moodwheel.ui.theme.color
 import kotlin.math.cos
 import kotlin.math.min
@@ -31,13 +32,14 @@ fun CalmBackground(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
     Box(
         modifier = modifier.background(
             Brush.verticalGradient(
                 colors = listOf(
-                    Color(0xFFF2EEFF),
-                    Color(0xFFFFF8F0),
-                    Color(0xFFF7FBFF)
+                    colors.background,
+                    colors.surfaceVariant.copy(alpha = 0.74f),
+                    colors.surface
                 )
             )
         ),
@@ -98,11 +100,11 @@ fun EmotionArtwork(
 
 fun levelColor(level: MoodLevel): Color =
     when (level) {
-        MoodLevel.VeryGood -> Color(0xFF6CC35B)
-        MoodLevel.Good -> Color(0xFFA8D66D)
-        MoodLevel.Neutral -> Color(0xFFFFD45A)
-        MoodLevel.Bad -> Color(0xFFFFA14D)
-        MoodLevel.VeryBad -> Color(0xFFFF7468)
+        MoodLevel.VeryGood -> MoodColors.MoodVeryGood
+        MoodLevel.Good -> MoodColors.MoodGood
+        MoodLevel.Neutral -> MoodColors.MoodNeutral
+        MoodLevel.Bad -> MoodColors.MoodBad
+        MoodLevel.VeryBad -> MoodColors.MoodVeryBad
     }
 
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawFace(

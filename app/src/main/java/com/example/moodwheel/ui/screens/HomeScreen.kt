@@ -1,42 +1,43 @@
 package com.example.moodwheel.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.moodwheel.R
 import com.example.moodwheel.domain.model.EmotionCatalog
 import com.example.moodwheel.domain.model.MoodEntry
-import com.example.moodwheel.ui.components.AppIllustration
 import com.example.moodwheel.ui.components.CalmBackground
 import com.example.moodwheel.ui.components.CalmCard
 import com.example.moodwheel.ui.components.GradientButton
 import com.example.moodwheel.ui.components.MoodOrb
 import com.example.moodwheel.ui.components.ProfileAvatar
 import com.example.moodwheel.ui.theme.color
+import com.example.moodwheel.ui.theme.softColor
 import java.time.LocalDate
 
 @Composable
@@ -51,24 +52,22 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 20.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Spacer(Modifier.height(8.dp))
             HomeHeader(
                 latest = state.latest,
                 profileName = profileName,
                 avatarPath = avatarPath
             )
-            LastEntryCard(entry = state.latest)
-            WeekSummary(entries = state.allEntries)
-            PrinciplesCard()
             GradientButton(
-                text = "Aggiungi umore",
+                text = "Nuovo check-in",
                 onClick = onAddMood,
                 modifier = Modifier.fillMaxWidth()
             )
+            LastEntryCard(entry = state.latest)
+            WeekSummary(entries = state.allEntries)
+            PrinciplesCard()
         }
     }
 }
@@ -76,33 +75,53 @@ fun HomeScreen(
 @Composable
 private fun PrinciplesCard() {
     CalmCard(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 13.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Calma, non controllo", fontWeight = FontWeight.SemiBold)
-            Text(
-                "Un check-in breve. Nessun account. Nessuna pressione.",
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                PrinciplePill("30 sec")
-                PrinciplePill("Solo locale")
-                PrinciplePill("No giudizi")
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.tertiaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                LocalDataMark()
+            }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("I tuoi dati sono al sicuro", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    "Nessun account, nessun cloud. Solo tu e il tuo spazio.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }
 }
 
 @Composable
-private fun PrinciplePill(label: String) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(100.dp))
-            .background(Color(0xFFF1EDFF))
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-    ) {
-        Text(label, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
+private fun LocalDataMark() {
+    val ink = MaterialTheme.colorScheme.tertiary
+    Canvas(modifier = Modifier.size(22.dp)) {
+        val stroke = Stroke(width = 2.2.dp.toPx(), cap = StrokeCap.Round)
+        val w = size.width
+        val h = size.height
+        val shield = Path().apply {
+            moveTo(w * 0.5f, h * 0.08f)
+            lineTo(w * 0.82f, h * 0.22f)
+            lineTo(w * 0.76f, h * 0.58f)
+            quadraticBezierTo(w * 0.68f, h * 0.8f, w * 0.5f, h * 0.92f)
+            quadraticBezierTo(w * 0.32f, h * 0.8f, w * 0.24f, h * 0.58f)
+            lineTo(w * 0.18f, h * 0.22f)
+            close()
+        }
+        drawPath(shield, ink.copy(alpha = 0.86f), style = stroke)
+        drawLine(ink, Offset(w * 0.38f, h * 0.5f), Offset(w * 0.48f, h * 0.62f), stroke.width, cap = StrokeCap.Round)
+        drawLine(ink, Offset(w * 0.48f, h * 0.62f), Offset(w * 0.66f, h * 0.4f), stroke.width, cap = StrokeCap.Round)
     }
 }
 
@@ -115,21 +134,25 @@ private fun HomeHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(30.dp))
+            .clip(MaterialTheme.shapes.extraLarge)
             .background(
                 Brush.linearGradient(
-                    listOf(Color(0xFF6A54F5), Color(0xFF9B8CFF), Color(0xFFFFB38D))
+                    listOf(
+                        MaterialTheme.colorScheme.surface,
+                        MaterialTheme.colorScheme.primaryContainer,
+                        MaterialTheme.colorScheme.tertiaryContainer
+                    )
                 )
             )
-            .padding(20.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             Text(
                 "Ciao, ${profileName.trim().ifBlank { "Daniele" }}",
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = if (latest == null) {
@@ -137,14 +160,15 @@ private fun HomeHeader(
                 } else {
                     "Come ti senti adesso?"
                 },
-                color = Color.White.copy(alpha = 0.86f)
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         Box(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.22f)),
+                .background(Color.White.copy(alpha = 0.64f)),
             contentAlignment = Alignment.Center
         ) {
             ProfileAvatar(
@@ -160,31 +184,53 @@ private fun HomeHeader(
 private fun LastEntryCard(entry: MoodEntry?) {
     CalmCard(modifier = Modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text("Ultimo check-in", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+            Text("Ultimo check-in", style = MaterialTheme.typography.titleMedium)
             if (entry == null) {
-                AppIllustration(resId = R.drawable.empty_state)
-                Text("Nessun momento registrato ancora.")
+                Text(
+                    "Ancora nessun momento registrato. Puoi iniziare con un check-in leggero.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             } else {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    MoodOrb(level = entry.moodLevel, size = 56.dp)
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                        Text(entry.primaryEmotion.label, fontWeight = FontWeight.Bold)
-                        Text(entry.secondaryEmotions.joinToString(", ").ifBlank { "Solo categoria" })
-                        Text("Oggi, ${entry.timestamp.formatTime()}", style = MaterialTheme.typography.labelMedium)
+                    MoodOrb(level = entry.moodLevel, size = 52.dp)
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                entry.primaryEmotion.label,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                entry.timestamp.formatTime(),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            (listOf(entry.primaryEmotion.label) + entry.secondaryEmotions)
+                                .distinct()
+                                .take(2)
+                                .forEach { label ->
+                                    MoodTag(label = label, color = entry.primaryEmotion.softColor())
+                                }
+                        }
+                        if (entry.note.isNotBlank()) {
+                            Text(
+                                text = entry.note,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
-                    Text(">", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                AnimatedVisibility(visible = entry.note.isNotBlank(), enter = fadeIn()) {
-                    Text(
-                        text = entry.note,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
         }
@@ -199,15 +245,26 @@ private fun WeekSummary(entries: List<MoodEntry>) {
 
     CalmCard(modifier = Modifier.fillMaxWidth()) {
         Column(
-            Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text("Panoramica settimana", fontWeight = FontWeight.SemiBold)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text("Panoramica settimana", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "${entries.count { !it.timestamp.toLocalDate().isBefore(today.minusDays(6)) }} check-in registrati",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 Text(
-                    "${entries.count { !it.timestamp.toLocalDate().isBefore(today.minusDays(6)) }} momenti registrati",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    "7 giorni",
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(100.dp))
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             }
             Row(
@@ -215,28 +272,62 @@ private fun WeekSummary(entries: List<MoodEntry>) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 days.forEach { day ->
+                    val hasEntries = byDay[day].orEmpty().isNotEmpty()
                     val dominant = byDay[day]
                         ?.groupingBy { it.primaryEmotion.id }
                         ?.eachCount()
                         ?.maxByOrNull { it.value }
                         ?.key
                         ?.let(EmotionCatalog::byId)
+                    val isToday = day == today
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Box(
                             modifier = Modifier
-                                .size(if (day == today) 30.dp else 24.dp)
+                                .size(if (isToday) 34.dp else 28.dp)
                                 .clip(CircleShape)
-                                .background(dominant?.color() ?: MaterialTheme.colorScheme.outline.copy(alpha = 0.22f)),
+                                .background(
+                                    when {
+                                        dominant != null -> dominant.color().copy(alpha = if (isToday) 0.86f else 0.62f)
+                                        hasEntries -> MaterialTheme.colorScheme.tertiaryContainer
+                                        else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.12f)
+                                    }
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
-                            if (dominant == null) {
-                                Text(" ", style = MaterialTheme.typography.labelSmall)
-                            }
+                            Text(
+                                day.dayOfMonth.toString(),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (dominant != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
-                        Text(day.dayOfWeek.name.first().toString(), style = MaterialTheme.typography.labelSmall)
+                        Text(
+                            day.dayOfWeek.name.first().toString(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MoodTag(label: String, color: Color) {
+    Box(
+        modifier = Modifier
+            .heightIn(min = 24.dp)
+            .widthIn(max = 96.dp)
+            .clip(RoundedCornerShape(100.dp))
+            .background(color)
+            .padding(horizontal = 8.dp, vertical = 5.dp)
+    ) {
+        Text(
+            text = label.lowercase(),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
