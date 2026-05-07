@@ -2,6 +2,9 @@
 
 Privacy-first Android mood tracker built with Kotlin, Jetpack Compose, Room, MVVM, and StateFlow.
 
+**Project Context**
+This application is entirely vibecoded to test Codex, evaluate its capability to develop this type of application, and serve as a personal tool.
+
 ## Why Kotlin + Compose
 
 The brief asks for Room, Jetpack Compose, MVVM, and local-only Android storage. Flutter is a good cross-platform option, but this MVP keeps the native Android stack so Room and Compose stay first-class and simple.
