@@ -97,8 +97,8 @@ fun DiaryScreen(
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = Color.Transparent,
                                 unfocusedBorderColor = Color.Transparent,
-                                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.48f),
-                                unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.38f)
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
                             )
                         )
                         FlowRow(
@@ -183,7 +183,7 @@ private fun FilterPill(
     ) {
         Text(
             text = label,
-            color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.labelMedium,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
         )

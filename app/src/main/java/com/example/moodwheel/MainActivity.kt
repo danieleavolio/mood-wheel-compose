@@ -12,10 +12,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -28,6 +32,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -54,6 +59,7 @@ import com.example.moodwheel.ui.screens.OnboardingScreen
 import com.example.moodwheel.ui.screens.StatsScreen
 import com.example.moodwheel.ui.theme.MoodWheelTheme
 import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
@@ -120,6 +126,7 @@ private data class LocalProfile(
     val avatarPath: String?
 )
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MoodApp(
     repository: MoodRepository,
@@ -141,7 +148,9 @@ private fun MoodApp(
     }
 
     val tabs = listOf(Tab.Home, Tab.Calendar, Tab.Stats, Tab.Diary, Tab.Export)
-    var selectedTab by remember { mutableStateOf(Tab.Home) }
+    val pagerState = rememberPagerState(pageCount = { tabs.size })
+    val selectedTab = tabs.getOrElse(pagerState.currentPage) { Tab.Home }
+    val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var lastBackPress by remember { mutableLongStateOf(0L) }
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -160,7 +169,7 @@ private fun MoodApp(
     }
 
     BackHandler(enabled = mode == AppMode.Main && selectedTab != Tab.Home) {
-        selectedTab = Tab.Home
+        scope.launch { pagerState.animateScrollToPage(0) }
     }
 
     BackHandler(enabled = mode == AppMode.Main && selectedTab == Tab.Home) {
@@ -225,7 +234,7 @@ private fun MoodApp(
     Scaffold(
         bottomBar = {
             NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.96f),
+                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.98f),
                 tonalElevation = 2.dp,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -236,7 +245,11 @@ private fun MoodApp(
                     val selected = selectedTab == item
                     NavigationBarItem(
                         selected = selected,
-                        onClick = { selectedTab = item },
+                        onClick = {
+                            scope.launch {
+                                pagerState.animateScrollToPage(tabs.indexOf(item))
+                            }
+                        },
                         icon = { NavGlyph(tabIcon(item), selected = selected) },
                         label = { Text(tabLabel(item)) },
                         colors = NavigationBarItemDefaults.colors(
@@ -244,68 +257,77 @@ private fun MoodApp(
                             selectedTextColor = MaterialTheme.colorScheme.primary,
                             unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                             unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            indicatorColor = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.86f) else Color.Transparent
+                            indicatorColor = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.78f) else Color.Transparent
                         )
                     )
                 }
             }
         }
     ) { padding ->
-        when (selectedTab) {
-            Tab.Home -> {
-                val homeViewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(repository))
-                val state by homeViewModel.uiState.collectAsStateWithLifecycle()
-                HomeScreen(
-                    state = state,
-                    profileName = profile.name,
-                    avatarPath = profile.avatarPath,
-                    onAddMood = { openAdd() },
-                    modifier = Modifier.padding(padding)
-                )
-            }
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            beyondViewportPageCount = 0,
+            key = { page -> tabs[page] }
+        ) { page ->
+            when (tabs[page]) {
+                Tab.Home -> {
+                    val homeViewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(repository))
+                    val state by homeViewModel.uiState.collectAsStateWithLifecycle()
+                    HomeScreen(
+                        state = state,
+                        profileName = profile.name,
+                        avatarPath = profile.avatarPath,
+                        onAddMood = { openAdd() },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
 
-            Tab.Calendar -> {
-                val state by calendarVm.calendarUiState.collectAsStateWithLifecycle()
-                CalendarScreen(
-                    state = state,
-                    onPreviousMonth = calendarVm::previousMonth,
-                    onNextMonth = calendarVm::nextMonth,
-                    onEntryClick = { entry ->
-                        selectedEntryId = entry.id
-                        mode = AppMode.Detail
-                    },
-                    onAddMoodForDate = { date -> openAdd(date) },
-                    modifier = Modifier.padding(padding)
-                )
-            }
+                Tab.Calendar -> {
+                    val state by calendarVm.calendarUiState.collectAsStateWithLifecycle()
+                    CalendarScreen(
+                        state = state,
+                        onPreviousMonth = calendarVm::previousMonth,
+                        onNextMonth = calendarVm::nextMonth,
+                        onEntryClick = { entry ->
+                            selectedEntryId = entry.id
+                            mode = AppMode.Detail
+                        },
+                        onAddMoodForDate = { date -> openAdd(date) },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
 
-            Tab.Stats -> {
-                StatsScreen(entries = entries, modifier = Modifier.padding(padding))
-            }
+                Tab.Stats -> {
+                    StatsScreen(entries = entries, modifier = Modifier.fillMaxSize())
+                }
 
-            Tab.Diary -> {
-                DiaryScreen(
-                    entries = entries,
-                    onEntryClick = { entry ->
-                        selectedEntryId = entry.id
-                        mode = AppMode.Detail
-                    },
-                    onAddMood = { openAdd() },
-                    modifier = Modifier.padding(padding)
-                )
-            }
+                Tab.Diary -> {
+                    DiaryScreen(
+                        entries = entries,
+                        onEntryClick = { entry ->
+                            selectedEntryId = entry.id
+                            mode = AppMode.Detail
+                        },
+                        onAddMood = { openAdd() },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
 
-            Tab.Export -> {
-                ExportScreen(
-                    viewModel = viewModel(factory = ExportViewModelFactory(repository)),
-                    profileName = profile.name,
-                    avatarPath = profile.avatarPath,
-                    onNameChange = ::updateName,
-                    onAvatarChange = ::updateAvatar,
-                    darkTheme = darkTheme,
-                    onDarkThemeChange = onDarkThemeChange,
-                    modifier = Modifier.padding(padding)
-                )
+                Tab.Export -> {
+                    ExportScreen(
+                        viewModel = viewModel(factory = ExportViewModelFactory(repository)),
+                        profileName = profile.name,
+                        avatarPath = profile.avatarPath,
+                        onNameChange = ::updateName,
+                        onAvatarChange = ::updateAvatar,
+                        darkTheme = darkTheme,
+                        onDarkThemeChange = onDarkThemeChange,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
         }
     }

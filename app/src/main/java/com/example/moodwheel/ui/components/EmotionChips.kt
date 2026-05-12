@@ -54,7 +54,7 @@ fun EmotionChips(
                         },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = emotion.color(),
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onSurface,
                             containerColor = emotion.softColor()
                         )
                     )

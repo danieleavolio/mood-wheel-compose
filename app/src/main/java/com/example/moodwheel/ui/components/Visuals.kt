@@ -38,7 +38,7 @@ fun CalmBackground(
             Brush.verticalGradient(
                 colors = listOf(
                     colors.background,
-                    colors.surfaceVariant.copy(alpha = 0.74f),
+                    colors.primaryContainer.copy(alpha = 0.30f),
                     colors.surface
                 )
             )

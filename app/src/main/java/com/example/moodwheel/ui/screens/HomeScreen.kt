@@ -139,9 +139,8 @@ private fun HomeHeader(
                 Brush.linearGradient(
                     listOf(
                         MaterialTheme.colorScheme.surface,
-                        MaterialTheme.colorScheme.primaryContainer,
-                        MaterialTheme.colorScheme.tertiaryContainer,
-                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.62f)
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.58f),
+                        MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.40f)
                     )
                 )
             )
@@ -169,7 +168,7 @@ private fun HomeHeader(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.64f)),
+                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.52f)),
             contentAlignment = Alignment.Center
         ) {
             ProfileAvatar(

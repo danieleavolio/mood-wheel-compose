@@ -41,16 +41,16 @@ fun CalmCard(
 ) {
     val cardBrush = Brush.linearGradient(
         listOf(
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.96f),
-            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.46f),
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.24f)
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.58f),
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.12f)
         )
     )
     Card(
         modifier = modifier,
         shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.36f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.48f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         content = {
             Box(

@@ -16,33 +16,33 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 object MoodColors {
-    val Cream = Color(0xFFFFF3E2)
-    val WarmSurface = Color(0xFFFFEAD1)
-    val SoftSurface = Color(0xFFF3E2CC)
-    val Lavender = Color(0xFF9B8AD6)
-    val LavenderSoft = Color(0xFFE5DAF2)
-    val Sage = Color(0xFFAFC7A2)
-    val SageSoft = Color(0xFFDDEBD4)
-    val DustyBlue = Color(0xFFA9C6DD)
-    val DustyBlueSoft = Color(0xFFDCECF4)
-    val Apricot = Color(0xFFF5B98E)
-    val ApricotSoft = Color(0xFFF7DDC7)
-    val Butter = Color(0xFFF6D98E)
+    val Cream = Color(0xFFFFFCF7)
+    val WarmSurface = Color(0xFFFFFAF2)
+    val SoftSurface = Color(0xFFFFF4E8)
+    val Lavender = Color(0xFF9E91D6)
+    val LavenderSoft = Color(0xFFF3EFFC)
+    val Sage = Color(0xFFA7BE9B)
+    val SageSoft = Color(0xFFF0F7EB)
+    val DustyBlue = Color(0xFFA5C4D8)
+    val DustyBlueSoft = Color(0xFFEEF8FC)
+    val Apricot = Color(0xFFEFB58B)
+    val ApricotSoft = Color(0xFFFFF0E5)
+    val Butter = Color(0xFFF6DA8E)
     val Ink = Color(0xFF243044)
     val MutedInk = Color(0xFF6F7685)
 
-    val EmotionHappiness = Color(0xFFAFCF9D)
-    val EmotionSadness = Color(0xFFA8C8E4)
-    val EmotionAnger = Color(0xFFE7A095)
-    val EmotionFear = Color(0xFFB8ADD8)
-    val EmotionDisgust = Color(0xFFF2BC8F)
-    val EmotionSurprise = Color(0xFFF3D38D)
+    val EmotionHappiness = Color(0xFFB8D6A7)
+    val EmotionSadness = Color(0xFFB8D3E8)
+    val EmotionAnger = Color(0xFFE9AAA0)
+    val EmotionFear = Color(0xFFC3B9E2)
+    val EmotionDisgust = Color(0xFFF2C49A)
+    val EmotionSurprise = Color(0xFFF5DA98)
 
-    val MoodVeryGood = Color(0xFFAFCF9D)
-    val MoodGood = Color(0xFFCFE0A5)
-    val MoodNeutral = Color(0xFFF3D38D)
-    val MoodBad = Color(0xFFF1BE93)
-    val MoodVeryBad = Color(0xFFE7A095)
+    val MoodVeryGood = Color(0xFFB8D6A7)
+    val MoodGood = Color(0xFFD6E8B4)
+    val MoodNeutral = Color(0xFFF5DA98)
+    val MoodBad = Color(0xFFF4C9A8)
+    val MoodVeryBad = Color(0xFFE9AAA0)
 
     val DarkBackground = Color(0xFF171822)
     val DarkSurface = Color(0xFF222330)
@@ -71,8 +71,8 @@ private val LightColors: ColorScheme = lightColorScheme(
     onSurface = MoodColors.Ink,
     surfaceVariant = MoodColors.SoftSurface,
     onSurfaceVariant = MoodColors.MutedInk,
-    outline = Color(0xFFCDBDAA),
-    outlineVariant = Color(0xFFE1CFBA)
+    outline = Color(0xFFD5C7B7),
+    outlineVariant = Color(0xFFEADDCF)
 )
 
 private val DarkColors: ColorScheme = darkColorScheme(

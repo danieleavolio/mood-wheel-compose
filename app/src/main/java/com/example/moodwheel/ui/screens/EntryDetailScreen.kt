@@ -109,7 +109,7 @@ fun EntryDetailScreen(
                             listOf(
                                 selectedMacro.softColor(),
                                 MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.44f),
-                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.84f)
                             )
                         )
                     )
@@ -201,7 +201,7 @@ fun EntryDetailScreen(
                             focusedBorderColor = Color.Transparent,
                             unfocusedBorderColor = Color.Transparent,
                             focusedContainerColor = selectedMacro.softColor(),
-                            unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.38f)
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
                         )
                     )
                 }

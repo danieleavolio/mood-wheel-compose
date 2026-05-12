@@ -220,7 +220,7 @@ private fun EmotionStep(
                                 label = { Text(label, style = MaterialTheme.typography.labelMedium) },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = selected.color(),
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onSurface,
                                     containerColor = selected.color().copy(alpha = 0.16f),
                                     labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -356,7 +356,7 @@ private fun NoteStep(
                         focusedBorderColor = Color.Transparent,
                         unfocusedBorderColor = Color.Transparent,
                         focusedContainerColor = macro.softColor(),
-                        unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.38f)
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
                     ),
                     supportingText = {
                         Text("${state.note.length}/300")
