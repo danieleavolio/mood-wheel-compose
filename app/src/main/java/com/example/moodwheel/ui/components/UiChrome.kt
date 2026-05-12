@@ -39,18 +39,19 @@ fun CalmCard(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
     val cardBrush = Brush.linearGradient(
         listOf(
-            MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.58f),
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.12f)
+            colors.surface.copy(alpha = 0.98f),
+            colors.surfaceVariant.copy(alpha = 0.44f),
+            colors.primaryContainer.copy(alpha = 0.10f)
         )
     )
     Card(
         modifier = modifier,
         shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.48f)),
+        colors = CardDefaults.cardColors(containerColor = colors.surface),
+        border = BorderStroke(1.dp, colors.outlineVariant.copy(alpha = 0.38f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         content = {
             Box(

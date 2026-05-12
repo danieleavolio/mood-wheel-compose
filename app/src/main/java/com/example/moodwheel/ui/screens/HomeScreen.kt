@@ -24,7 +24,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextOverflow
@@ -69,16 +68,49 @@ fun HomeScreen(
             )
             LastEntryCard(entry = state.latest)
             WeekSummary(entries = state.allEntries, onDayClick = onDayClick)
-            PrinciplesCard()
+            DailyCueCard(latest = state.latest, entries = state.allEntries, onClick = onAddMood)
         }
     }
 }
 
 @Composable
-private fun PrinciplesCard() {
+private fun DailyCueCard(
+    latest: MoodEntry?,
+    entries: List<MoodEntry>,
+    onClick: () -> Unit
+) {
+    val today = LocalDate.now()
+    val todayCount = entries.count { it.timestamp.toLocalDate() == today }
+    val averageWeek = entries
+        .filter { !it.timestamp.toLocalDate().isBefore(today.minusDays(6)) }
+        .map { it.moodLevel.value }
+        .average()
+        .takeIf { !it.isNaN() }
+
+    val title = when {
+        todayCount == 0 -> "Un check-in leggero"
+        latest != null && latest.moodLevel.value <= 2 -> "Fai spazio, piano"
+        latest != null && latest.moodLevel.value >= 4 -> "Tieni traccia del buono"
+        else -> "Nota il contesto"
+    }
+    val body = when {
+        todayCount == 0 -> "Bastano 20 secondi: livello, emozione, una parola se serve."
+        latest != null && latest.moodLevel.value <= 2 -> "Scegli una cosa piccola che può alleggerire il resto della giornata."
+        latest != null && latest.moodLevel.value >= 4 -> "Se c'è qualcosa che ha funzionato, appuntalo mentre è ancora chiaro."
+        else -> "Aggiungi un dettaglio: luogo, persona, energia o pensiero ricorrente."
+    }
+    val meta = when {
+        todayCount == 0 -> "inizia oggi"
+        averageWeek != null -> "media 7g %.1f/5".format(averageWeek)
+        else -> "$todayCount oggi"
+    }
+
     CalmCard(modifier = Modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 13.dp),
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.large)
+                .clickable(onClick = onClick)
+                .padding(horizontal = 14.dp, vertical = 13.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -89,41 +121,45 @@ private fun PrinciplesCard() {
                     .background(MaterialTheme.colorScheme.tertiaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                LocalDataMark()
+                GentleSparkMark()
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("I tuoi dati sono al sicuro", style = MaterialTheme.typography.titleMedium)
+                Text(title, style = MaterialTheme.typography.titleMedium)
                 Text(
-                    "Nessun account, nessun cloud. Solo tu e il tuo spazio.",
+                    body,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
+            Text(
+                meta,
+                modifier = Modifier
+                    .widthIn(max = 108.dp)
+                    .clip(RoundedCornerShape(100.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.72f))
+                    .padding(horizontal = 9.dp, vertical = 6.dp),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
 
 @Composable
-private fun LocalDataMark() {
+private fun GentleSparkMark() {
     val ink = MaterialTheme.colorScheme.tertiary
     Canvas(modifier = Modifier.size(22.dp)) {
         val stroke = Stroke(width = 2.2.dp.toPx(), cap = StrokeCap.Round)
         val w = size.width
         val h = size.height
-        val shield = Path().apply {
-            moveTo(w * 0.5f, h * 0.08f)
-            lineTo(w * 0.82f, h * 0.22f)
-            lineTo(w * 0.76f, h * 0.58f)
-            quadraticBezierTo(w * 0.68f, h * 0.8f, w * 0.5f, h * 0.92f)
-            quadraticBezierTo(w * 0.32f, h * 0.8f, w * 0.24f, h * 0.58f)
-            lineTo(w * 0.18f, h * 0.22f)
-            close()
-        }
-        drawPath(shield, ink.copy(alpha = 0.86f), style = stroke)
-        drawLine(ink, Offset(w * 0.38f, h * 0.5f), Offset(w * 0.48f, h * 0.62f), stroke.width, cap = StrokeCap.Round)
-        drawLine(ink, Offset(w * 0.48f, h * 0.62f), Offset(w * 0.66f, h * 0.4f), stroke.width, cap = StrokeCap.Round)
+        drawLine(ink, Offset(w * 0.5f, h * 0.12f), Offset(w * 0.5f, h * 0.88f), stroke.width, cap = StrokeCap.Round)
+        drawLine(ink.copy(alpha = 0.86f), Offset(w * 0.18f, h * 0.5f), Offset(w * 0.82f, h * 0.5f), stroke.width, cap = StrokeCap.Round)
+        drawCircle(ink.copy(alpha = 0.42f), radius = w * 0.16f, center = Offset(w * 0.26f, h * 0.24f))
+        drawCircle(ink.copy(alpha = 0.30f), radius = w * 0.12f, center = Offset(w * 0.76f, h * 0.76f))
     }
 }
 

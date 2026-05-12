@@ -38,7 +38,7 @@ fun CalmBackground(
             Brush.verticalGradient(
                 colors = listOf(
                     colors.background,
-                    colors.primaryContainer.copy(alpha = 0.30f),
+                    colors.primaryContainer.copy(alpha = 0.22f),
                     colors.surface
                 )
             )
@@ -54,6 +54,7 @@ fun MoodOrb(
     size: Dp = 64.dp,
     selected: Boolean = false
 ) {
+    val highlight = MaterialTheme.colorScheme.surface.copy(alpha = 0.28f)
     Canvas(
         modifier = modifier
             .size(size)
@@ -62,7 +63,7 @@ fun MoodOrb(
         val radius = min(this.size.width, this.size.height) / 2f
         val center = Offset(this.size.width / 2f, this.size.height / 2f)
         drawCircle(levelColor(level), radius = radius, center = center)
-        drawCircle(Color.White.copy(alpha = 0.22f), radius = radius * 0.72f, center = center.copy(y = center.y - radius * 0.16f))
+        drawCircle(highlight, radius = radius * 0.72f, center = center.copy(y = center.y - radius * 0.16f))
         drawFace(level, center, radius)
     }
 }
@@ -75,6 +76,7 @@ fun EmotionArtwork(
     animated: Boolean = false
 ) {
     val base = emotion?.color() ?: MaterialTheme.colorScheme.primary
+    val highlight = MaterialTheme.colorScheme.surface.copy(alpha = 0.34f)
     val drift = 0f
 
     Canvas(modifier = modifier.size(size)) {
@@ -93,8 +95,8 @@ fun EmotionArtwork(
             )
         }
         drawCircle(base.copy(alpha = 0.92f), radius = r * 0.42f, center = c)
-        drawCircle(Color.White.copy(alpha = 0.24f), radius = r * 0.28f, center = c.copy(y = c.y - r * 0.1f))
-        drawEmotionMark(emotion?.id, c, r)
+        drawCircle(highlight, radius = r * 0.28f, center = c.copy(y = c.y - r * 0.1f))
+        drawEmotionMark(emotion?.id, c, r, highlight)
     }
 }
 
@@ -145,19 +147,20 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawFace(
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawEmotionMark(
     id: String?,
     center: Offset,
-    radius: Float
+    radius: Float,
+    highlight: Color
 ) {
     val ink = Color(0xFF2D2A35).copy(alpha = 0.7f)
     when (id) {
-        "happiness" -> drawCircle(Color.White.copy(alpha = 0.82f), radius * 0.08f, center.copy(y = center.y - radius * 0.02f))
+        "happiness" -> drawCircle(highlight.copy(alpha = 0.92f), radius * 0.08f, center.copy(y = center.y - radius * 0.02f))
         "sadness" -> drawOval(ink.copy(alpha = 0.45f), topLeft = Offset(center.x - radius * 0.1f, center.y), size = Size(radius * 0.2f, radius * 0.32f))
         "anger" -> {
             drawLine(ink, Offset(center.x - radius * 0.14f, center.y - radius * 0.1f), Offset(center.x + radius * 0.14f, center.y + radius * 0.1f), radius * 0.05f, cap = StrokeCap.Round)
             drawLine(ink, Offset(center.x + radius * 0.14f, center.y - radius * 0.1f), Offset(center.x - radius * 0.14f, center.y + radius * 0.1f), radius * 0.05f, cap = StrokeCap.Round)
         }
-        "fear" -> drawCircle(Color.White.copy(alpha = 0.8f), radius * 0.14f, center)
+        "fear" -> drawCircle(highlight.copy(alpha = 0.88f), radius * 0.14f, center)
         "disgust" -> drawArc(ink, startAngle = 20f, sweepAngle = 140f, useCenter = false, topLeft = Offset(center.x - radius * 0.18f, center.y - radius * 0.02f), size = Size(radius * 0.36f, radius * 0.22f), style = Stroke(width = radius * 0.045f, cap = StrokeCap.Round))
-        "surprise" -> drawCircle(Color.White.copy(alpha = 0.9f), radius * 0.13f, center)
-        else -> drawCircle(Color.White.copy(alpha = 0.72f), radius * 0.1f, center)
+        "surprise" -> drawCircle(highlight.copy(alpha = 0.94f), radius * 0.13f, center)
+        else -> drawCircle(highlight.copy(alpha = 0.82f), radius * 0.1f, center)
     }
 }

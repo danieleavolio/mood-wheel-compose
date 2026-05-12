@@ -43,14 +43,14 @@ object MoodColors {
     val MoodBad = Color(0xFFF4C9A8)
     val MoodVeryBad = Color(0xFFE9AAA0)
 
-    val DarkBackground = Color(0xFF171822)
-    val DarkSurface = Color(0xFF222330)
-    val DarkSurfaceVariant = Color(0xFF2C2B36)
-    val DarkLavender = Color(0xFFC8BDF2)
-    val DarkSage = Color(0xFFC2D7B8)
-    val DarkDustyBlue = Color(0xFFBBD3E6)
-    val DarkInk = Color(0xFFF7F1E8)
-    val DarkMutedInk = Color(0xFFCFC8BE)
+    val DarkBackground = Color(0xFF1D1C24)
+    val DarkSurface = Color(0xFF282631)
+    val DarkSurfaceVariant = Color(0xFF332F3C)
+    val DarkLavender = Color(0xFFD6CBFA)
+    val DarkSage = Color(0xFFC3D7B8)
+    val DarkDustyBlue = Color(0xFFB9D2E6)
+    val DarkInk = Color(0xFFF8F2EA)
+    val DarkMutedInk = Color(0xFFD1C8BE)
 }
 
 private val LightColors: ColorScheme = lightColorScheme(
@@ -77,15 +77,15 @@ private val LightColors: ColorScheme = lightColorScheme(
 private val DarkColors: ColorScheme = darkColorScheme(
     primary = MoodColors.DarkLavender,
     onPrimary = Color(0xFF30264C),
-    primaryContainer = Color(0xFF4E426C),
+    primaryContainer = Color(0xFF4A415D),
     onPrimaryContainer = MoodColors.DarkInk,
     secondary = MoodColors.DarkSage,
     onSecondary = Color(0xFF263420),
-    secondaryContainer = Color(0xFF3E4B39),
+    secondaryContainer = Color(0xFF394635),
     onSecondaryContainer = MoodColors.DarkInk,
     tertiary = MoodColors.DarkDustyBlue,
     onTertiary = Color(0xFF203241),
-    tertiaryContainer = Color(0xFF3B4C5C),
+    tertiaryContainer = Color(0xFF354657),
     onTertiaryContainer = MoodColors.DarkInk,
     background = MoodColors.DarkBackground,
     onBackground = MoodColors.DarkInk,
@@ -93,8 +93,8 @@ private val DarkColors: ColorScheme = darkColorScheme(
     onSurface = MoodColors.DarkInk,
     surfaceVariant = MoodColors.DarkSurfaceVariant,
     onSurfaceVariant = MoodColors.DarkMutedInk,
-    outline = Color(0xFF77706A),
-    outlineVariant = Color(0xFF45404A)
+    outline = Color(0xFF867D75),
+    outlineVariant = Color(0xFF46414D)
 )
 
 private val AppTypography = Typography(

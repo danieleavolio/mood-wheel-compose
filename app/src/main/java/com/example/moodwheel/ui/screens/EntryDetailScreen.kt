@@ -43,7 +43,6 @@ import com.example.moodwheel.ui.components.CalmCard
 import com.example.moodwheel.ui.components.EmotionArtwork
 import com.example.moodwheel.ui.components.EmotionChips
 import com.example.moodwheel.ui.components.EmotionWheel
-import com.example.moodwheel.ui.components.GradientButton
 import com.example.moodwheel.ui.components.MoodSelector
 import com.example.moodwheel.ui.components.SoftTimePickerSheet
 import com.example.moodwheel.ui.theme.softColor
@@ -70,6 +69,26 @@ fun EntryDetailScreen(
     var note by remember(entry.id) { mutableStateOf(entry.note) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showTimeSheet by remember { mutableStateOf(false) }
+
+    fun saveChanges() {
+        val timestamp = LocalDateTime.of(date, time)
+            .atZone(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+        onSave(
+            entry.copy(
+                timestamp = timestamp,
+                moodLevel = moodLevel,
+                primaryEmotion = selectedMacro,
+                primaryEmotions = selectedMacroIds
+                    .ifEmpty { setOf(selectedMacro.id) }
+                    .map(EmotionCatalog::byId),
+                secondaryEmotions = selectedMicro.toList(),
+                note = note.trim()
+            )
+        )
+        onBack()
+    }
 
     fun selectMacro(emotion: MacroEmotion) {
         val next = selectedMacroIds.toMutableSet()
@@ -108,8 +127,8 @@ fun EntryDetailScreen(
                     fontWeight = FontWeight.SemiBold,
                     textAlign = TextAlign.Center
                 )
-                TextButton(onClick = { showDeleteDialog = true }) {
-                    Text("Elimina", color = Color(0xFFE45252))
+                TextButton(onClick = { saveChanges() }) {
+                    Text("Salva", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
                 }
             }
 
@@ -236,29 +255,12 @@ fun EntryDetailScreen(
                 }
             }
 
-            GradientButton(
-                text = "Salva modifiche",
-                onClick = {
-                    val timestamp = LocalDateTime.of(date, time)
-                        .atZone(ZoneId.systemDefault())
-                        .toInstant()
-                        .toEpochMilli()
-                    onSave(
-                        entry.copy(
-                            timestamp = timestamp,
-                            moodLevel = moodLevel,
-                            primaryEmotion = selectedMacro,
-                            primaryEmotions = selectedMacroIds
-                                .ifEmpty { setOf(selectedMacro.id) }
-                                .map(EmotionCatalog::byId),
-                            secondaryEmotions = selectedMicro.toList(),
-                            note = note.trim()
-                        )
-                    )
-                    onBack()
-                },
+            TextButton(
+                onClick = { showDeleteDialog = true },
                 modifier = Modifier.fillMaxWidth()
-            )
+            ) {
+                Text("Elimina momento", color = Color(0xFFE45252), fontWeight = FontWeight.SemiBold)
+            }
         }
     }
 
