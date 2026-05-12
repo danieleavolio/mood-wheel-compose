@@ -74,7 +74,7 @@ fun ExportScreen(
         if (uri != null) {
             viewModel.importFrom(context.contentResolver, uri) { result ->
                 message = if (result.success) {
-                    "Import completato: ${result.imported} nuovi, ${result.skipped} gia presenti."
+                    "Import completato: ${result.imported} nuovi, ${result.skipped} già presenti."
                 } else {
                     "Non sono riuscito a leggere quel JSON."
                 }
@@ -148,7 +148,7 @@ private fun ProfileCard(
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                     Text(profileName.ifBlank { "Il tuo spazio" }, style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "Identita locale, solo sul telefono.",
+                        "Identità locale, solo sul telefono.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

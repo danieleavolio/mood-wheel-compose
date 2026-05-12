@@ -2,6 +2,7 @@ package com.example.moodwheel.ui.screens
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,6 +47,7 @@ fun HomeScreen(
     profileName: String,
     avatarPath: String?,
     onAddMood: () -> Unit,
+    onDayClick: (LocalDate) -> Unit,
     modifier: Modifier = Modifier
 ) {
     CalmBackground(modifier = modifier.fillMaxSize()) {
@@ -66,7 +68,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth()
             )
             LastEntryCard(entry = state.latest)
-            WeekSummary(entries = state.allEntries)
+            WeekSummary(entries = state.allEntries, onDayClick = onDayClick)
             PrinciplesCard()
         }
     }
@@ -203,7 +205,7 @@ private fun LastEntryCard(entry: MoodEntry?) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                entry.primaryEmotion.label,
+                                entry.primaryEmotions.joinToString(" + ") { it.label },
                                 style = MaterialTheme.typography.titleMedium,
                                 modifier = Modifier.weight(1f)
                             )
@@ -214,7 +216,7 @@ private fun LastEntryCard(entry: MoodEntry?) {
                             )
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            (listOf(entry.primaryEmotion.label) + entry.secondaryEmotions)
+                            (entry.primaryEmotions.map { it.label } + entry.secondaryEmotions)
                                 .distinct()
                                 .take(2)
                                 .forEach { label ->
@@ -238,7 +240,10 @@ private fun LastEntryCard(entry: MoodEntry?) {
 }
 
 @Composable
-private fun WeekSummary(entries: List<MoodEntry>) {
+private fun WeekSummary(
+    entries: List<MoodEntry>,
+    onDayClick: (LocalDate) -> Unit
+) {
     val today = LocalDate.now()
     val days = (6 downTo 0).map { today.minusDays(it.toLong()) }
     val byDay = entries.groupBy { it.timestamp.toLocalDate() }
@@ -274,7 +279,8 @@ private fun WeekSummary(entries: List<MoodEntry>) {
                 days.forEach { day ->
                     val hasEntries = byDay[day].orEmpty().isNotEmpty()
                     val dominant = byDay[day]
-                        ?.groupingBy { it.primaryEmotion.id }
+                        ?.flatMap { it.primaryEmotions }
+                        ?.groupingBy { it.id }
                         ?.eachCount()
                         ?.maxByOrNull { it.value }
                         ?.key
@@ -285,6 +291,7 @@ private fun WeekSummary(entries: List<MoodEntry>) {
                             modifier = Modifier
                                 .size(if (isToday) 34.dp else 28.dp)
                                 .clip(CircleShape)
+                                .clickable { onDayClick(day) }
                                 .background(
                                     when {
                                         dominant != null -> dominant.color().copy(alpha = if (isToday) 0.86f else 0.62f)

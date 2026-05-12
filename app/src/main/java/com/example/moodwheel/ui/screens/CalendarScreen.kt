@@ -320,7 +320,7 @@ private fun SelectedDayCard(
                     )
                 } else {
                     Text(
-                        "${latest.primaryEmotion.label} alle ${latest.timestamp.formatTime()}",
+                        "${latest.primaryEmotions.joinToString(" + ") { it.label }} alle ${latest.timestamp.formatTime()}",
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -390,7 +390,8 @@ private fun LegendItem(emotion: MacroEmotion) {
 
 private fun dominantEmotion(entries: List<MoodEntry>): MacroEmotion? =
     entries
-        .groupingBy { it.primaryEmotion.id }
+        .flatMap { it.primaryEmotions }
+        .groupingBy { it.id }
         .eachCount()
         .maxByOrNull { it.value }
         ?.key

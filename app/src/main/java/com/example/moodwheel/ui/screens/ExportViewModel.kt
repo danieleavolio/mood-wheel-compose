@@ -97,7 +97,7 @@ private fun MoodEntry.signature(): String =
     listOf(
         timestamp.toString(),
         moodLevel.value.toString(),
-        primaryEmotion.id,
+        primaryEmotions.map { it.id }.sorted().joinToString("|"),
         secondaryEmotions.sorted().joinToString("|"),
         note.trim()
     ).joinToString("#")

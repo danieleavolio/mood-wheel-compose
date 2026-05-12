@@ -52,9 +52,9 @@ fun DiaryScreen(
     var query by remember { mutableStateOf("") }
     val normalizedQuery = query.trim().lowercase()
     val filteredEntries = entries.filter { entry ->
-        val matchesEmotion = selectedEmotionId == null || entry.primaryEmotion.id == selectedEmotionId
+        val matchesEmotion = selectedEmotionId == null || entry.primaryEmotions.any { it.id == selectedEmotionId }
         val searchable = buildString {
-            append(entry.primaryEmotion.label)
+            append(entry.primaryEmotions.joinToString(" ") { it.label })
             append(" ")
             append(entry.secondaryEmotions.joinToString(" "))
             append(" ")
@@ -204,7 +204,7 @@ fun DiaryEntryRow(
         ) {
             EmotionArtwork(emotion = entry.primaryEmotion, size = 54.dp)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(entry.primaryEmotion.label, fontWeight = FontWeight.Bold)
+                Text(entry.primaryEmotions.take(2).joinToString(" + ") { it.label }, fontWeight = FontWeight.Bold)
                 Text(
                     entry.secondaryEmotions.take(3).joinToString(", ").ifBlank { "Solo categoria" },
                     maxLines = 1,

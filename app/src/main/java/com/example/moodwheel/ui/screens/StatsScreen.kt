@@ -218,6 +218,7 @@ private fun EmotionDistributionCard(
     total: Int,
     modifier: Modifier = Modifier
 ) {
+    val distributionTotal = distribution.sumOf { it.second }.takeIf { it > 0 } ?: total
     CalmCard(modifier = modifier.height(226.dp)) {
         Column(
             modifier = Modifier.padding(12.dp),
@@ -225,14 +226,14 @@ private fun EmotionDistributionCard(
         ) {
             Text("Distribuzione", style = MaterialTheme.typography.titleMedium)
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                DonutChart(distribution = distribution, total = total)
+                DonutChart(distribution = distribution, total = distributionTotal)
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(total.toString(), style = MaterialTheme.typography.titleLarge)
                     Text("check-in", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             distribution.take(3).forEach { (emotion, count) ->
-                LegendLine(emotion = emotion, percent = if (total == 0) 0 else count * 100 / total)
+                LegendLine(emotion = emotion, percent = if (distributionTotal == 0) 0 else count * 100 / distributionTotal)
             }
         }
     }
@@ -337,7 +338,8 @@ private fun MoodTrend(entries: List<MoodEntry>) {
 
 private fun emotionDistribution(entries: List<MoodEntry>): List<Pair<MacroEmotion, Int>> =
     entries
-        .groupingBy { it.primaryEmotion.id }
+        .flatMap { it.primaryEmotions }
+        .groupingBy { it.id }
         .eachCount()
         .entries
         .sortedByDescending { it.value }

@@ -29,6 +29,7 @@ import kotlin.math.sin
 @Composable
 fun EmotionWheel(
     selected: MacroEmotion?,
+    selectedEmotions: Set<String> = emptySet(),
     onSelect: (MacroEmotion) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -62,8 +63,13 @@ fun EmotionWheel(
             val sweep = 360f / emotions.size
 
             emotions.forEachIndexed { index, emotion ->
-                val isSelected = selected?.id == emotion.id
-                val extra = if (isSelected) 12f else 0f
+                val isActive = selected?.id == emotion.id
+                val isSelected = isActive || emotion.id in selectedEmotions
+                val extra = when {
+                    isActive -> 12f
+                    isSelected -> 7f
+                    else -> 0f
+                }
                 val segmentRadius = radius - 10f + extra
                 val topLeft = Offset(center.x - segmentRadius, center.y - segmentRadius)
                 val segmentSize = Size(segmentRadius * 2f, segmentRadius * 2f)

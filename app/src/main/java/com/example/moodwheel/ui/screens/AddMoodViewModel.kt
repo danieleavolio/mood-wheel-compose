@@ -22,6 +22,7 @@ data class AddMoodUiState(
     val step: Int = 1,
     val moodLevel: MoodLevel? = null,
     val selectedMacro: MacroEmotion? = null,
+    val selectedMacroIds: Set<String> = emptySet(),
     val selectedMicro: Set<String> = emptySet(),
     val date: LocalDate = LocalDate.now(),
     val time: LocalTime = LocalTime.now().withSecond(0).withNano(0),
@@ -31,7 +32,7 @@ data class AddMoodUiState(
     val canGoNext: Boolean
         get() = when (step) {
             1 -> moodLevel != null
-            2 -> selectedMacro != null
+            2 -> selectedMacroIds.isNotEmpty()
             else -> true
         }
 }
@@ -48,14 +49,31 @@ class AddMoodViewModel(
         _uiState.update { it.copy(moodLevel = level) }
     }
 
-    fun selectMacro(emotion: MacroEmotion) {
+    fun toggleMacro(emotion: MacroEmotion) {
         _uiState.update { current ->
+            val selected = current.selectedMacroIds.toMutableSet()
+            val wasSelected = !selected.add(emotion.id)
+            if (wasSelected) selected.remove(emotion.id)
+
+            val allowedMicro = EmotionCatalog.emotions
+                .filter { it.id in selected }
+                .flatMap { it.microEmotions }
+                .toSet()
+            val nextActive = when {
+                !wasSelected -> emotion
+                current.selectedMacro?.id != emotion.id -> current.selectedMacro
+                else -> selected.firstOrNull()?.let(EmotionCatalog::byId)
+            }
+
             current.copy(
-                selectedMacro = emotion,
-                selectedMicro = current.selectedMicro.intersect(emotion.microEmotions.toSet())
+                selectedMacro = nextActive,
+                selectedMacroIds = selected,
+                selectedMicro = current.selectedMicro.intersect(allowedMicro)
             )
         }
     }
+
+    fun selectMacro(emotion: MacroEmotion) = toggleMacro(emotion)
 
     fun toggleMicro(label: String) {
         _uiState.update { current ->
@@ -90,7 +108,8 @@ class AddMoodViewModel(
     fun save(onSaved: () -> Unit) {
         val state = _uiState.value
         val mood = state.moodLevel ?: return
-        val macro = state.selectedMacro ?: return
+        val macros = state.selectedMacroIds.map(EmotionCatalog::byId).ifEmpty { return }
+        val macro = state.selectedMacro?.takeIf { active -> active.id in state.selectedMacroIds } ?: macros.first()
         _uiState.update { it.copy(isSaving = true) }
         viewModelScope.launch {
             val timestamp = LocalDateTime.of(state.date, state.time)
@@ -102,13 +121,12 @@ class AddMoodViewModel(
                     timestamp = timestamp,
                     moodLevel = mood,
                     primaryEmotion = macro,
+                    primaryEmotions = macros,
                     secondaryEmotions = state.selectedMicro.toList(),
                     note = state.note.trim()
                 )
             )
-            _uiState.value = AddMoodUiState(
-                selectedMacro = EmotionCatalog.emotions.first()
-            )
+            _uiState.value = AddMoodUiState()
             onSaved()
         }
     }

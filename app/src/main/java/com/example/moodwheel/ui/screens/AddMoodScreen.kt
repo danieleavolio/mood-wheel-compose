@@ -6,11 +6,11 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,8 +22,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -47,6 +45,7 @@ import com.example.moodwheel.domain.model.MoodLevel
 import com.example.moodwheel.ui.components.CalmBackground
 import com.example.moodwheel.ui.components.CalmCard
 import com.example.moodwheel.ui.components.EmotionArtwork
+import com.example.moodwheel.ui.components.EmotionChips
 import com.example.moodwheel.ui.components.EmotionWheel
 import com.example.moodwheel.ui.components.GradientButton
 import com.example.moodwheel.ui.components.MoodListSelector
@@ -160,27 +159,32 @@ private fun MoodStep(
 }
 
 @Composable
-@OptIn(ExperimentalLayoutApi::class)
 private fun EmotionStep(
     state: AddMoodUiState,
     viewModel: AddMoodViewModel
 ) {
+    val scrollState = rememberScrollState()
     Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("Quale emozione prevale?", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        Text("Seleziona una categoria dalla ruota.", style = MaterialTheme.typography.bodyMedium)
+        Text("Puoi selezionare anche più categorie.", style = MaterialTheme.typography.bodyMedium)
         EmotionWheel(
             selected = state.selectedMacro,
-            onSelect = viewModel::selectMacro
+            selectedEmotions = state.selectedMacroIds,
+            onSelect = viewModel::toggleMacro
         )
 
         val selected = state.selectedMacro
+            ?: state.selectedMacroIds.firstOrNull()?.let(EmotionCatalog::byId)
         if (selected == null) {
             CalmCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "Non serve essere precisi subito. Scegli quello che assomiglia di piu al momento.",
+                    text = "Non serve essere precisi subito. Scegli una o più categorie che assomigliano al momento.",
                     modifier = Modifier.padding(16.dp)
                 )
             }
@@ -203,30 +207,33 @@ private fun EmotionStep(
                     ) {
                         EmotionArtwork(emotion = selected, size = 58.dp)
                         Column {
-                            Text(selected.label, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Text("Scegli le emozioni che senti.")
-                        }
-                    }
-                    FlowRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        selected.microEmotions.take(10).forEach { label ->
-                            val isSelected = label in state.selectedMicro
-                            FilterChip(
-                                selected = isSelected,
-                                onClick = { viewModel.toggleMicro(label) },
-                                label = { Text(label, style = MaterialTheme.typography.labelMedium) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = selected.color(),
-                                    selectedLabelColor = MaterialTheme.colorScheme.onSurface,
-                                    containerColor = selected.color().copy(alpha = 0.16f),
-                                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                            Text(
+                                state.selectedMacroIds
+                                    .map(EmotionCatalog::byId)
+                                    .joinToString(" + ") { it.label },
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
                             )
+                            Text("Tocca la ruota per aggiungere o togliere categorie.")
                         }
                     }
+                    state.selectedMacroIds
+                        .map(EmotionCatalog::byId)
+                        .forEach { macro ->
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(
+                                    macro.label,
+                                    color = macro.color(),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                EmotionChips(
+                                    emotion = macro,
+                                    selected = state.selectedMicro,
+                                    onToggle = viewModel::toggleMicro
+                                )
+                            }
+                        }
                 }
             }
         }
@@ -245,7 +252,7 @@ private fun DateTimeStep(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
-        Text("Quando e successo?", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text("Quando è successo?", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text("Puoi lasciare l'ora attuale o cambiarla.", textAlign = TextAlign.Center)
 
         Button(
@@ -329,7 +336,7 @@ private fun NoteStep(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text("Vuoi aggiungere una nota?", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        Text("Racconta cosa e successo, solo se ti va.", textAlign = TextAlign.Center)
+        Text("Racconta cosa è successo, solo se ti va.", textAlign = TextAlign.Center)
         CalmCard(modifier = Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Row(

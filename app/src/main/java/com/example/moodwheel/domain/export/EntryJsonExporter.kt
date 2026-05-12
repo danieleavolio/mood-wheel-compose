@@ -16,6 +16,8 @@ class EntryJsonExporter {
                     .put("moodLevel", entry.moodLevel.value)
                     .put("primaryEmotion", entry.primaryEmotion.label)
                     .put("primaryEmotionId", entry.primaryEmotion.id)
+                    .put("primaryEmotions", JSONArray(entry.primaryEmotions.map { it.label }))
+                    .put("primaryEmotionIds", JSONArray(entry.primaryEmotions.map { it.id }))
                     .put("secondaryEmotions", JSONArray(entry.secondaryEmotions))
                     .put("note", entry.note)
             )

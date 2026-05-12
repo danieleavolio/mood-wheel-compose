@@ -14,7 +14,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,7 +24,6 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -69,21 +67,15 @@ class MainActivity : ComponentActivity() {
         val repository = (application as MoodWheelApplication).container.repository
         val prefs = getSharedPreferences("mood_wheel_prefs", MODE_PRIVATE)
         setContent {
+            var onboardingDone by remember {
+                mutableStateOf(prefs.getBoolean("onboarding_done", false))
+            }
             var themeMode by remember {
-                mutableStateOf(prefs.getString("theme_mode", "system") ?: "system")
+                mutableStateOf(prefs.getString("theme_mode", "light") ?: "light")
             }
-            val systemDark = isSystemInDarkTheme()
-            val darkTheme = when (themeMode) {
-                "dark" -> true
-                "light" -> false
-                else -> systemDark
-            }
+            val darkTheme = onboardingDone && themeMode == "dark"
 
             MoodWheelTheme(darkTheme = darkTheme) {
-                var onboardingDone by remember {
-                    mutableStateOf(prefs.getBoolean("onboarding_done", false))
-                }
-
                 if (onboardingDone) {
                     MoodApp(
                         repository = repository,
@@ -250,8 +242,8 @@ private fun MoodApp(
                                 pagerState.animateScrollToPage(tabs.indexOf(item))
                             }
                         },
+                        alwaysShowLabel = false,
                         icon = { NavGlyph(tabIcon(item), selected = selected) },
-                        label = { Text(tabLabel(item)) },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -281,6 +273,7 @@ private fun MoodApp(
                         profileName = profile.name,
                         avatarPath = profile.avatarPath,
                         onAddMood = { openAdd() },
+                        onDayClick = { date -> openAdd(date) },
                         modifier = Modifier.fillMaxSize()
                     )
                 }
@@ -332,15 +325,6 @@ private fun MoodApp(
         }
     }
 }
-
-private fun tabLabel(tab: Tab): String =
-    when (tab) {
-        Tab.Home -> "Home"
-        Tab.Calendar -> "Calendario"
-        Tab.Stats -> "Statistiche"
-        Tab.Diary -> "Momenti"
-        Tab.Export -> "Profilo"
-    }
 
 private fun tabIcon(tab: Tab): String =
     when (tab) {

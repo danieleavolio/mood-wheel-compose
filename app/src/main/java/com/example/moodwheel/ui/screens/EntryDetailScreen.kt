@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.moodwheel.domain.model.EmotionCatalog
 import com.example.moodwheel.domain.model.MacroEmotion
 import com.example.moodwheel.domain.model.MoodEntry
 import com.example.moodwheel.ui.components.CalmBackground
@@ -62,6 +63,7 @@ fun EntryDetailScreen(
     val context = LocalContext.current
     var moodLevel by remember(entry.id) { mutableStateOf(entry.moodLevel) }
     var selectedMacro by remember(entry.id) { mutableStateOf(entry.primaryEmotion) }
+    var selectedMacroIds by remember(entry.id) { mutableStateOf(entry.primaryEmotions.map { it.id }.toSet()) }
     var selectedMicro by remember(entry.id) { mutableStateOf(entry.secondaryEmotions.toSet()) }
     var date by remember(entry.id) { mutableStateOf(entry.timestamp.toLocalDate()) }
     var time by remember(entry.id) { mutableStateOf(entry.timestamp.toLocalTime()) }
@@ -70,8 +72,19 @@ fun EntryDetailScreen(
     var showTimeSheet by remember { mutableStateOf(false) }
 
     fun selectMacro(emotion: MacroEmotion) {
-        selectedMacro = emotion
-        selectedMicro = selectedMicro.intersect(emotion.microEmotions.toSet())
+        val next = selectedMacroIds.toMutableSet()
+        if (!next.add(emotion.id)) next.remove(emotion.id)
+        selectedMacroIds = next
+        val allowedMicro = EmotionCatalog.emotions
+            .filter { it.id in next }
+            .flatMap { it.microEmotions }
+            .toSet()
+        selectedMicro = selectedMicro.intersect(allowedMicro)
+        selectedMacro = when {
+            emotion.id in next -> emotion
+            selectedMacro.id in next -> selectedMacro
+            else -> next.firstOrNull()?.let(EmotionCatalog::byId) ?: emotion
+        }
     }
 
     BackHandler(onBack = onBack)
@@ -121,7 +134,14 @@ fun EntryDetailScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     EmotionArtwork(emotion = selectedMacro, size = 110.dp)
-                    Text(selectedMacro.label, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(
+                        selectedMacroIds
+                            .ifEmpty { setOf(selectedMacro.id) }
+                            .map(EmotionCatalog::byId)
+                            .joinToString(" + ") { it.label },
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
                     Text("${date.formatDate()} - %02d:%02d".format(time.hour, time.minute))
                     Text(
                         selectedMicro.joinToString(", ").ifBlank { "Solo categoria" },
@@ -141,25 +161,34 @@ fun EntryDetailScreen(
             CalmCard(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("Emozione", fontWeight = FontWeight.SemiBold)
-                    EmotionWheel(selected = selectedMacro, onSelect = ::selectMacro)
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(selectedMacro.softColor(), RoundedCornerShape(18.dp))
-                            .padding(14.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Text(selectedMacro.label, fontWeight = FontWeight.SemiBold)
-                        EmotionChips(
-                            emotion = selectedMacro,
-                            selected = selectedMicro,
-                            onToggle = { label ->
-                                selectedMicro = selectedMicro.toMutableSet().also { set ->
-                                    if (!set.add(label)) set.remove(label)
-                                }
+                    EmotionWheel(
+                        selected = selectedMacro,
+                        selectedEmotions = selectedMacroIds,
+                        onSelect = ::selectMacro
+                    )
+                    selectedMacroIds
+                        .ifEmpty { setOf(selectedMacro.id) }
+                        .map(EmotionCatalog::byId)
+                        .forEach { macro ->
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(macro.softColor(), RoundedCornerShape(18.dp))
+                                    .padding(14.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Text(macro.label, fontWeight = FontWeight.SemiBold)
+                                EmotionChips(
+                                    emotion = macro,
+                                    selected = selectedMicro,
+                                    onToggle = { label ->
+                                        selectedMicro = selectedMicro.toMutableSet().also { set ->
+                                            if (!set.add(label)) set.remove(label)
+                                        }
+                                    }
+                                )
                             }
-                        )
-                    }
+                        }
                 }
             }
 
@@ -219,6 +248,9 @@ fun EntryDetailScreen(
                             timestamp = timestamp,
                             moodLevel = moodLevel,
                             primaryEmotion = selectedMacro,
+                            primaryEmotions = selectedMacroIds
+                                .ifEmpty { setOf(selectedMacro.id) }
+                                .map(EmotionCatalog::byId),
                             secondaryEmotions = selectedMicro.toList(),
                             note = note.trim()
                         )

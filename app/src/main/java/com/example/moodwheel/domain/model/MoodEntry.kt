@@ -5,6 +5,7 @@ data class MoodEntry(
     val timestamp: Long,
     val moodLevel: MoodLevel,
     val primaryEmotion: MacroEmotion,
+    val primaryEmotions: List<MacroEmotion> = listOf(primaryEmotion),
     val secondaryEmotions: List<String>,
     val note: String
 )

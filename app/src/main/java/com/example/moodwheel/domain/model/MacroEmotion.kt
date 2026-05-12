@@ -24,7 +24,7 @@ object EmotionCatalog {
             groups = listOf(
                 group("Accettato", "Soddisfatto", "Rispettato"),
                 group("Interessato", "Divertito", "Curioso"),
-                group("Infimo", "Giocoso", "Delicato"),
+                group("Intimo", "Giocoso", "Delicato"),
                 group("Gioioso", "Estasiato", "Liberato"),
                 group("Ottimista", "Ispirato", "Aperto"),
                 group("Tranquillo", "Speranzoso", "Amorevole"),

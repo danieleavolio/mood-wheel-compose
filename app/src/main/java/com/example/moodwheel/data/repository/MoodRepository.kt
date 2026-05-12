@@ -51,22 +51,40 @@ class MoodRepository(
     }
 
     private fun EntryEntity.toDomain(): MoodEntry =
+        primaryEmotions
+            .ifEmpty { listOf(primaryEmotion) }
+            .map(EmotionCatalog::byId)
+            .distinctBy { it.id }
+            .let { macros ->
+                MoodEntry(
+                    id = id,
+                    timestamp = timestamp,
+                    moodLevel = MoodLevel.fromValue(moodLevel),
+                    primaryEmotion = macros.firstOrNull() ?: EmotionCatalog.byId(primaryEmotion),
+                    primaryEmotions = macros.ifEmpty { listOf(EmotionCatalog.byId(primaryEmotion)) },
+                    secondaryEmotions = secondaryEmotions,
+                    note = note
+                )
+            }
+
+    private fun MoodEntry.toEntity(): EntryEntity =
         MoodEntry(
             id = id,
             timestamp = timestamp,
-            moodLevel = MoodLevel.fromValue(moodLevel),
-            primaryEmotion = EmotionCatalog.byId(primaryEmotion),
+            moodLevel = moodLevel,
+            primaryEmotion = primaryEmotion,
+            primaryEmotions = primaryEmotions.ifEmpty { listOf(primaryEmotion) },
             secondaryEmotions = secondaryEmotions,
             note = note
-        )
-
-    private fun MoodEntry.toEntity(): EntryEntity =
-        EntryEntity(
-            id = id,
-            timestamp = timestamp,
-            moodLevel = moodLevel.value,
-            primaryEmotion = primaryEmotion.id,
-            secondaryEmotions = secondaryEmotions,
-            note = note
-        )
+        ).let { normalized ->
+            EntryEntity(
+                id = normalized.id,
+                timestamp = normalized.timestamp,
+                moodLevel = normalized.moodLevel.value,
+                primaryEmotion = normalized.primaryEmotion.id,
+                primaryEmotions = normalized.primaryEmotions.map { it.id }.distinct(),
+                secondaryEmotions = normalized.secondaryEmotions,
+                note = normalized.note
+            )
+        }
 }
